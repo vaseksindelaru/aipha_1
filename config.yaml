@@ -1,0 +1,18 @@
+
+system:
+  storage_root: "./aipha_memory_storage"
+
+atomic_update_system:
+  version_history_file_name: "VERSION_HISTORY.json"
+  global_state_file_name: "global_state.json"
+  action_history_file_name: "action_history.json"
+  dependencies_lock_file_name: "dependencies.lock.json"
+  backups_dir_name: "backups"
+  config_dir_name: "config"
+
+context_sentinel:
+  knowledge_base_db_name: "knowledge_base.db"
+  global_state_dir_name: "global_state"
+  global_state_file_name: "current_state.json"
+  action_history_dir_name: "action_history"
+  action_history_file_name: "current_history.json"
