@@ -19,39 +19,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# --- Función para cargar la configuración desde un archivo YAML (para pruebas independientes) ---
-# Al igual que en atomic_update_system.py, esta función está aquí para permitir
-# que context_sentinel.py se ejecute de forma autónoma para pruebas.
-# En el flujo normal del sistema, main.py es quien carga la configuración y se la pasa.
-def load_config(config_path: Path) -> Dict[str, Any]:
-    if not config_path.exists():
-        logger.warning(f"Archivo de configuración no encontrado: {config_path}. Creando uno por defecto.")
-        default_config_content = """
-system:
-  storage_root: "./aipha_memory_storage"
-
-atomic_update_system:
-  version_history_file_name: "VERSION_HISTORY.json"
-  global_state_file_name: "global_state.json"
-  action_history_file_name: "action_history.json"
-  dependencies_lock_file_name: "dependencies.lock.json"
-  backups_dir_name: "backups"
-  config_dir_name: "config"
-
-context_sentinel:
-  knowledge_base_db_name: "knowledge_base.db"
-  global_state_dir_name: "global_state"
-  global_state_file_name: "current_state.json"
-  action_history_dir_name: "action_history"
-  action_history_file_name: "current_history.json"
-"""
-        config_path.write_text(default_config_content, encoding='utf-8')
-        return yaml.safe_load(default_config_content)
-        
-    with open(config_path, 'r', encoding='utf-8') as f:
-        return yaml.safe_load(f)
-
-
 # --- Clases de Datos (Dataclasses) ---
 @dataclass
 class KnowledgeEntry:

@@ -1,6 +1,6 @@
 [
   {
-    "timestamp": "2025-10-01T14:01:05.544811Z",
+    "timestamp": "2025-10-03T17:27:35.582008Z",
     "action": "ContextSentinel: Sistema inicializado",
     "agent": "System",
     "component": "context_sentinel",
@@ -11,7 +11,7 @@
     }
   },
   {
-    "timestamp": "2025-10-01T14:01:05.552315Z",
+    "timestamp": "2025-10-03T17:27:35.584861Z",
     "action": "Evaluation: Criterio a\u00f1adido - 'Claridad y Especificidad'",
     "agent": "ContextSentinel",
     "component": "context_sentinel",
@@ -22,7 +22,7 @@
     }
   },
   {
-    "timestamp": "2025-10-01T14:01:05.571643Z",
+    "timestamp": "2025-10-03T17:27:35.607448Z",
     "action": "Evaluation: Criterio a\u00f1adido - 'Alineaci\u00f3n Arquitect\u00f3nica'",
     "agent": "ContextSentinel",
     "component": "context_sentinel",
@@ -33,7 +33,7 @@
     }
   },
   {
-    "timestamp": "2025-10-01T14:01:05.592109Z",
+    "timestamp": "2025-10-03T17:27:35.625130Z",
     "action": "Evaluation: Criterio a\u00f1adido - 'Viabilidad T\u00e9cnica'",
     "agent": "ContextSentinel",
     "component": "context_sentinel",
@@ -44,33 +44,153 @@
     }
   },
   {
-    "timestamp": "2025-10-01T14:01:05.633946Z",
+    "timestamp": "2025-10-03T17:27:35.655397Z",
     "action": "KnowledgeBase: Entrada a\u00f1adida - 'Aipha_1.1 Layer Architecture'",
     "agent": "ContextSentinel",
     "component": "context_sentinel",
     "status": "success",
     "details": {
-      "entry_id": "7479eeb3086c"
+      "entry_id": "5b221d80b4ad"
     }
   },
   {
-    "timestamp": "2025-10-01T14:01:05.661571Z",
-    "action": "KnowledgeBase: Entrada a\u00f1adida - 'Atomic Update Protocol'",
+    "timestamp": "2025-10-03T17:27:35.684195Z",
+    "action": "KnowledgeBase: Entrada a\u00f1adida - 'Aipha_1.1 Componentes del N\u00facleo (Capa 1)'",
     "agent": "ContextSentinel",
     "component": "context_sentinel",
     "status": "success",
     "details": {
-      "entry_id": "23bd62254503"
+      "entry_id": "c98bc4a5685c"
     }
   },
   {
-    "timestamp": "2025-10-01T14:01:05.683969Z",
+    "timestamp": "2025-10-03T17:27:35.702862Z",
+    "action": "KnowledgeBase: Entrada a\u00f1adida - 'Rol del ChangeProposer'",
+    "agent": "ContextSentinel",
+    "component": "context_sentinel",
+    "status": "success",
+    "details": {
+      "entry_id": "21bd55d093fe"
+    }
+  },
+  {
+    "timestamp": "2025-10-03T17:27:35.715027Z",
+    "action": "KnowledgeBase: Entrada a\u00f1adida - 'Rol del ProposalEvaluator'",
+    "agent": "ContextSentinel",
+    "component": "context_sentinel",
+    "status": "success",
+    "details": {
+      "entry_id": "c6e7d8872091"
+    }
+  },
+  {
+    "timestamp": "2025-10-03T17:27:35.732893Z",
+    "action": "KnowledgeBase: Entrada a\u00f1adida - 'Rol del CodecraftSage'",
+    "agent": "ContextSentinel",
+    "component": "context_sentinel",
+    "status": "success",
+    "details": {
+      "entry_id": "0e3e24c55c8a"
+    }
+  },
+  {
+    "timestamp": "2025-10-03T17:27:35.744318Z",
+    "action": "KnowledgeBase: Entrada a\u00f1adida - 'Rol del MetaImprover'",
+    "agent": "ContextSentinel",
+    "component": "context_sentinel",
+    "status": "success",
+    "details": {
+      "entry_id": "73e973b97105"
+    }
+  },
+  {
+    "timestamp": "2025-10-03T17:27:35.768326Z",
+    "action": "KnowledgeBase: Entrada a\u00f1adida - 'Rol del Data Postprocessor'",
+    "agent": "ContextSentinel",
+    "component": "context_sentinel",
+    "status": "success",
+    "details": {
+      "entry_id": "dec5cb174305"
+    }
+  },
+  {
+    "timestamp": "2025-10-03T17:27:35.781796Z",
+    "action": "KnowledgeBase: Entrada a\u00f1adida - 'Flujo General del Bucle de Automejora'",
+    "agent": "ContextSentinel",
+    "component": "context_sentinel",
+    "status": "success",
+    "details": {
+      "entry_id": "5a3e43eecc95"
+    }
+  },
+  {
+    "timestamp": "2025-10-03T17:27:35.800955Z",
+    "action": "KnowledgeBase: Entrada a\u00f1adida - 'Flujo de Propuesta de Cambio Detallado'",
+    "agent": "ContextSentinel",
+    "component": "context_sentinel",
+    "status": "success",
+    "details": {
+      "entry_id": "771733283f56"
+    }
+  },
+  {
+    "timestamp": "2025-10-03T17:27:35.819373Z",
+    "action": "KnowledgeBase: Entrada a\u00f1adida - 'Flujo de Evaluaci\u00f3n de Propuesta Detallado'",
+    "agent": "ContextSentinel",
+    "component": "context_sentinel",
+    "status": "success",
+    "details": {
+      "entry_id": "a76e58bbd92e"
+    }
+  },
+  {
+    "timestamp": "2025-10-03T17:27:35.840953Z",
+    "action": "KnowledgeBase: Entrada a\u00f1adida - 'Flujo de Aplicaci\u00f3n At\u00f3mica de Cambio (CriticalMemoryRules)'",
+    "agent": "ContextSentinel",
+    "component": "context_sentinel",
+    "status": "success",
+    "details": {
+      "entry_id": "b81a6a86ea29"
+    }
+  },
+  {
+    "timestamp": "2025-10-03T17:27:35.861087Z",
+    "action": "KnowledgeBase: Entrada a\u00f1adida - 'Principios de Modularidad en Aipha_1.1'",
+    "agent": "ContextSentinel",
+    "component": "context_sentinel",
+    "status": "success",
+    "details": {
+      "entry_id": "1ebb76eb48b8"
+    }
+  },
+  {
+    "timestamp": "2025-10-03T17:27:35.890087Z",
+    "action": "KnowledgeBase: Entrada a\u00f1adida - 'Uso de Type Hints en Python'",
+    "agent": "ContextSentinel",
+    "component": "context_sentinel",
+    "status": "success",
+    "details": {
+      "entry_id": "6388626e5041"
+    }
+  },
+  {
+    "timestamp": "2025-10-03T17:27:35.902104Z",
+    "action": "KnowledgeBase: Entrada a\u00f1adida - 'Principio de Seguridad 'Safety-First' en Aipha_1.1'",
+    "agent": "ContextSentinel",
+    "component": "context_sentinel",
+    "status": "success",
+    "details": {
+      "entry_id": "b04a6656171d"
+    }
+  },
+  {
+    "timestamp": "2025-10-03T17:27:35.914881Z",
     "action": "KnowledgeBase: Entrada a\u00f1adida - 'ATR Dynamic Barriers Proposal Details'",
     "agent": "ContextSentinel",
     "component": "context_sentinel",
     "status": "success",
     "details": {
-      "entry_id": "1ae992bfbf4f"
+      "entry_id": "3b8427cf026c"
     }
   }
 ]
