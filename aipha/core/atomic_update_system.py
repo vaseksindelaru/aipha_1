@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Dict, Any, Optional, List
 import logging
 import yaml
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, fields
 from enum import Enum
 import shutil
 
@@ -35,6 +35,19 @@ class ApprovalStatus(Enum):
     APPROVED = "approved"
     REJECTED = "rejected"
     ROLLED_BACK = "rolled_back"
+
+
+# --- Funciones auxiliares ---
+def dataclass_to_dict(obj):
+    """Convierte un dataclass a diccionario, manejando enums correctamente."""
+    result = {}
+    for field in fields(obj):
+        value = getattr(obj, field.name)
+        if isinstance(value, Enum):
+            result[field.name] = value.value
+        else:
+            result[field.name] = value
+    return result
 
 
 # --- Clases de Datos (Dataclasses) ---
@@ -241,7 +254,7 @@ class CriticalMemoryRules:
             logger.info(f"Archivos afectados según la propuesta: {', '.join(proposal.files_affected)}")
             
             global_state = self._load_json(self.global_state_file)
-            global_state[f"last_applied_proposal_{proposal.change_id}"] = asdict(proposal)
+            global_state[f"last_applied_proposal_{proposal.change_id}"] = dataclass_to_dict(proposal)
             self._save_json(self.global_state_file, global_state)
             logger.info(f"Simulación: La propuesta '{proposal.change_id}' se ha 'aplicado' al estado global.")
 
