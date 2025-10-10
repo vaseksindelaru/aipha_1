@@ -109,12 +109,63 @@ class VectorDBManager:
         )
         return [{"id": id, "content": doc, "metadata": meta} for id, doc, meta in zip(results['ids'][0], results['documents'][0], results['metadatas'][0])]
 
+from dataclasses import asdict
+from datetime import datetime
+import uuid
+
+@dataclass
+class DevelopmentStep:
+    id: str
+    timestamp: str
+    type: str
+    title: str
+    content: str
+    metadata: Dict[str, Any]
+
+class CaptureSystem:
+    def __init__(self, config: AIPHAConfig, db_manager: VectorDBManager):
+        self.config = config
+        self.db_manager = db_manager
+        logger.info("CaptureSystem inicializado.")
+
+    def capture_manual(self, step: DevelopmentStep):
+        """Captura manual de un paso de desarrollo en la DB vectorial."""
+        id = step.id
+        content = f"Type: {step.type}\nTitle: {step.title}\nContent: {step.content}\nMetadata: {step.metadata}"
+        self.db_manager.add_documents([content], [id], [step.metadata])
+
+    def capture_auto(self, code_snippet: str, context: str):
+        """Captura automática de un paso de desarrollo basado en código y contexto."""
+        if self.config.AUTO_CAPTURE:
+            # Lógica para inferir type, title, etc. usando LLM si es necesario
+            step = DevelopmentStep(
+                id=str(uuid.uuid4()),
+                timestamp=datetime.now().isoformat(),
+                type="auto_capture",
+                title="Auto-captured code snippet",
+                content=code_snippet,
+                metadata={"context": context}
+            )
+            self.capture_manual(step)
+
 if __name__ == "__main__":
-    # Test VectorDBManager
+    # Test CaptureSystem
     with open('config.yaml', 'r') as f:
         config = yaml.safe_load(f)
     aipha_config = AIPHAConfig(config)
     db_manager = VectorDBManager(aipha_config)
-    db_manager.add_documents(["Test document 1"], ["test1"], [{"type": "test"}])
-    results = db_manager.search("Test query")
+    capture_system = CaptureSystem(aipha_config, db_manager)
+    # Test manual capture
+    step = DevelopmentStep(
+        id=str(uuid.uuid4()),
+        timestamp=datetime.now().isoformat(),
+        type="test",
+        title="Test Step",
+        content="This is a test content.",
+        metadata={"author": "test_user"}
+    )
+    capture_system.capture_manual(step)
+    # Test auto capture
+    capture_system.capture_auto("print('Hello')", "Test context")
+    results = db_manager.search("test")
     print(results)
