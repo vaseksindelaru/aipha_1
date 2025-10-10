@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class AIPHAConfig:
-    """Configuración central del sistema de conocimiento, cargada del config.yaml global"""
+    """Configuration class for the Knowledge Manager system, loaded from global config.yaml."""
     
     PROJECT_ROOT: Path
     KNOWLEDGE_DB_PATH: Path
@@ -25,6 +25,18 @@ class AIPHAConfig:
     API_KEY: Optional[str] = None  # Se lee de env var
     
     def __init__(self, global_config: Dict[str, Any]):
+        """
+        Initializes AIPHAConfig from global config dict.
+
+        Args:
+            global_config (Dict[str, Any]): Global configuration dictionary.
+
+        Side effects:
+            - Sets paths and creates directories if they don't exist.
+
+        Example:
+            >>> config = AIPHAConfig({'knowledge_manager': {'project_root': './'}})
+        """
         km_config = global_config.get('knowledge_manager', {})
         
         self.PROJECT_ROOT = Path(km_config.get('project_root', "./"))
@@ -58,18 +70,80 @@ import numpy as np
 import openai
 
 class SentenceTransformerEmbeddingFunction:
+    """
+    Custom embedding function for ChromaDB using SentenceTransformer.
+
+    Provides embeddings for documents and queries.
+    """
     def __init__(self, model_name: str):
+        """
+        Initializes the embedding function with a SentenceTransformer model.
+
+        Args:
+            model_name (str): Name of the SentenceTransformer model.
+
+        Side effects:
+            - Loads the model into memory.
+
+        Example:
+            >>> emb_func = SentenceTransformerEmbeddingFunction("all-MiniLM-L6-v2")
+        """
         self.model = SentenceTransformer(model_name)
         self.model_name = model_name
 
     def __call__(self, input: List[str]) -> List[List[float]]:
+        """
+        Embeds a list of documents.
+
+        Args:
+            input (List[str]): List of text documents.
+
+        Returns:
+            List[List[float]]: List of embeddings.
+
+        Side effects:
+            - None.
+
+        Example:
+            >>> embeddings = emb_func(["Hello world"])
+        """
         embeddings = self.model.encode(input)
         return embeddings.tolist() if hasattr(embeddings, 'tolist') else embeddings
 
     def embed_documents(self, texts: List[str]) -> List[List[float]]:
+        """
+        Alias for __call__.
+
+        Args:
+            texts (List[str]): List of text documents.
+
+        Returns:
+            List[List[float]]: List of embeddings.
+
+        Side effects:
+            - None.
+
+        Example:
+            >>> embeddings = emb_func.embed_documents(["Hello"])
+        """
         return self(texts)
 
     def embed_query(self, input) -> List[List[float]]:
+        """
+        Embeds a single query.
+
+        Args:
+            input: Query text (str or list).
+
+        Returns:
+            List[List[float]]: Embedding wrapped in list.
+
+        Side effects:
+            - None.
+
+        Example:
+            >>> embedding = emb_func.embed_query("Hello")
+        """
         if isinstance(input, str):
             embedding = self.model.encode([input])[0]
         elif isinstance(input, list):
@@ -80,10 +154,37 @@ class SentenceTransformerEmbeddingFunction:
         return [emb_list]
 
     def name(self) -> str:
+        """
+        Returns the name of the embedding function.
+
+        Returns:
+            str: Name string.
+
+        Side effects:
+            - None.
+
+        Example:
+            >>> name = emb_func.name()
+        """
         return f"sentence-transformers-{self.model_name}"
 
 class VectorDBManager:
+    """
+    Manages the vector database using ChromaDB for knowledge storage and retrieval.
+    """
     def __init__(self, config: AIPHAConfig):
+        """
+        Initializes the Vector DB Manager with ChromaDB.
+
+        Args:
+            config (AIPHAConfig): Configuration object.
+
+        Side effects:
+            - Creates ChromaDB client and collection if not exists.
+
+        Example:
+            >>> db_manager = VectorDBManager(config)
+        """
         self.config = config
         self.embedding_function = SentenceTransformerEmbeddingFunction(self.config.EMBEDDING_MODEL)
         self.client = chromadb.PersistentClient(path=str(self.config.CHROMA_PERSIST_DIR))
@@ -95,6 +196,20 @@ class VectorDBManager:
         logger.info(f"VectorDBManager inicializado en {self.config.CHROMA_PERSIST_DIR}.")
 
     def add_documents(self, documents: List[str], ids: List[str], metadatas: Optional[List[Dict[str, Any]]] = None):
+        """
+        Adds documents to the ChromaDB collection.
+
+        Args:
+            documents (List[str]): List of document contents.
+            ids (List[str]): Unique IDs for documents.
+            metadatas (Optional[List[Dict[str, Any]]]): Metadata for each document.
+
+        Side effects:
+            - Persists to ChromaDB.
+
+        Example:
+            >>> db_manager.add_documents(["Test"], ["id1"])
+        """
         self.collection.add(
             documents=documents,
             ids=ids,
@@ -102,6 +217,23 @@ class VectorDBManager:
         )
 
     def search(self, query: str, n_results: int = 5, filter_type: Optional[str] = None) -> List[Dict[str, Any]]:
+        """
+        Searches the vector DB for relevant documents.
+
+        Args:
+            query (str): Search query.
+            n_results (int): Number of results to return.
+            filter_type (Optional[str]): Filter by metadata type.
+
+        Returns:
+            List[Dict[str, Any]]: List of matching documents with id, content, metadata.
+
+        Side effects:
+            - None.
+
+        Example:
+            >>> results = db_manager.search("test", 5)
+        """
         where = {"type": filter_type} if filter_type else None
         results = self.collection.query(
             query_texts=[query],
@@ -124,20 +256,60 @@ class DevelopmentStep:
     metadata: Dict[str, Any]
 
 class CaptureSystem:
+    """
+    Handles capturing and storing development steps in the vector DB.
+    """
     def __init__(self, config: AIPHAConfig, db_manager: VectorDBManager):
+        """
+        Initializes the Capture System.
+
+        Args:
+            config (AIPHAConfig): Configuration object.
+            db_manager (VectorDBManager): Vector DB manager instance.
+
+        Side effects:
+            - None.
+
+        Example:
+            >>> capture_system = CaptureSystem(config, db_manager)
+        """
         self.config = config
         self.db_manager = db_manager
         logger.info("CaptureSystem inicializado.")
 
     def capture_manual(self, step: DevelopmentStep):
-        """Captura manual de un paso de desarrollo en la DB vectorial."""
+        """
+        Captures a manual development step in the vector DB.
+
+        Args:
+            step (DevelopmentStep): The development step to capture.
+
+        Side effects:
+            - Adds document to vector DB.
+
+        Example:
+            >>> step = DevelopmentStep(...)
+            >>> capture_system.capture_manual(step)
+        """
         id = step.id
         content = f"Type: {step.type}\nTitle: {step.title}\nContent: {step.content}\nMetadata: {step.metadata}"
         metadata = {"type": step.type, **step.metadata}
         self.db_manager.add_documents([content], [id], [metadata])
 
     def capture_auto(self, code_snippet: str, context: str):
-        """Captura automática de un paso de desarrollo basado en código y contexto."""
+        """
+        Captures an automatic development step based on code and context.
+
+        Args:
+            code_snippet (str): The code snippet.
+            context (str): Context information.
+
+        Side effects:
+            - Adds document to vector DB if AUTO_CAPTURE is enabled.
+
+        Example:
+            >>> capture_system.capture_auto("print('Hello')", "Test context")
+        """
         if self.config.AUTO_CAPTURE:
             # Lógica para inferir type, title, etc. usando LLM si es necesario
             step = DevelopmentStep(
@@ -151,14 +323,49 @@ class CaptureSystem:
             self.capture_manual(step)
 
 class LLMQuerySystem:
+    """
+    Handles querying the LLM with context retrieved from the vector DB (RAG).
+    """
     def __init__(self, config: AIPHAConfig, db_manager: VectorDBManager):
+        """
+        Initializes the LLM Query System.
+
+        Args:
+            config (AIPHAConfig): Configuration object.
+            db_manager (VectorDBManager): Vector DB manager instance.
+
+        Side effects:
+            - Initializes OpenAI client.
+
+        Example:
+            >>> llm_system = LLMQuerySystem(config, db_manager)
+        """
         self.config = config
         self.db_manager = db_manager
-        self.client = openai.OpenAI(api_key=self.config.API_KEY)
+        if self.config.API_KEY:
+            self.client = openai.OpenAI(api_key=self.config.API_KEY)
+        else:
+            self.client = None
         logger.info("LLMQuerySystem inicializado.")
 
     def query(self, user_query: str) -> str:
-        """Consulta el LLM con contexto recuperado de la DB vectorial."""
+        """
+        Queries the LLM with context retrieved from the vector DB.
+
+        Args:
+            user_query (str): The user's query.
+
+        Returns:
+            str: The LLM's response.
+
+        Side effects:
+            - Calls OpenAI API if API_KEY is set.
+
+        Example:
+            >>> response = llm_system.query("What is the test content?")
+        """
+        if not self.client:
+            return "LLM not configured (no API_KEY)."
         # Recuperar contexto relevante
         relevant_docs = self.db_manager.search(user_query, n_results=3)
         context = "\n".join([doc['content'] for doc in relevant_docs])
@@ -177,28 +384,21 @@ class LLMQuerySystem:
            
 
 if __name__ == "__main__":
-    # Test CaptureSystem
     with open('config.yaml', 'r') as f:
         config = yaml.safe_load(f)
     aipha_config = AIPHAConfig(config)
     db_manager = VectorDBManager(aipha_config)
     capture_system = CaptureSystem(aipha_config, db_manager)
-    # Test manual capture
-    step = DevelopmentStep(
-        id=str(uuid.uuid4()),
-        timestamp=datetime.now().isoformat(),
-        type="test",
-        title="Test Step",
-        content="This is a test content.",
-        metadata={"author": "test_user"}
-    )
+    llm_query_system = LLMQuerySystem(aipha_config, db_manager)
+
+    # Add entry
+    step = DevelopmentStep(id=str(uuid.uuid4()), timestamp=datetime.now().isoformat(), type="test", title="Test", content="Test content", metadata={})
     capture_system.capture_manual(step)
-    # Test auto capture
-    capture_system.capture_auto("print('Hello')", "Test context")
-    results = db_manager.search("test")
+
+    # Search
+    results = db_manager.search("Test")
     print(results)
 
-    # Test LLMQuerySystem
-    llm_query_system = LLMQuerySystem(aipha_config, db_manager)
-    query_result = llm_query_system.query("What is the test content?")
+    # Query LLM
+    query_result = llm_query_system.query("What is the test?")
     print(query_result)

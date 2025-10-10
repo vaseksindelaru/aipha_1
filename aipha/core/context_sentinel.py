@@ -56,38 +56,127 @@ class ContextSentinel:
         logger.info("Action history inicializado.")
 
     def add_knowledge_entry(self, category: str, title: str, content: str, metadata: Optional[Dict[str, Any]] = None, version: str = "1.1.0") -> str:
-        if not metadata:
-            metadata = {"source": "context_sentinel"}
+        """
+        Adds a knowledge entry to the vector DB via Knowledge Manager.
+
+        Args:
+            category (str): Category of the entry (e.g., "architecture").
+            title (str): Title of the entry.
+            content (str): Main content of the entry.
+            metadata (Optional[Dict[str, Any]]): Additional metadata. Defaults to None.
+            version (str): Version of the entry. Defaults to "1.1.0".
+
+        Returns:
+            str: ID of the added entry.
+
+        Side effects:
+            - Adds document to ChromaDB collection.
+            - Logs the addition.
+
+        Example:
+            >>> entry_id = sentinel.add_knowledge_entry("test", "Test Title", "Test Content")
+            >>> print(entry_id)  # e.g., "uuid-string"
+        """
         step = DevelopmentStep(
             id=str(uuid.uuid4()),
             timestamp=datetime.now().isoformat(),
             type=category,
             title=title,
             content=content,
-            metadata=metadata
+            metadata=metadata or {"version": version}
         )
         self.capture_system.capture_manual(step)
         return step.id
 
     def get_knowledge_entries(self, category: Optional[str] = None, limit: int = 100) -> List[Dict[str, Any]]:
-        results = self.db_manager.search(query=category or "", n_results=limit, filter_type=category)
-        return results  # Retorna lista de dicts con id, content, metadata
+        """
+        Retrieves knowledge entries from the vector DB.
 
-    # Métodos similares para add_code_example y search_code_examples
+        Args:
+            category (Optional[str]): Filter by category/type. Defaults to None (all).
+            limit (int): Max results to return. Defaults to 100.
+
+        Returns:
+            List[Dict[str, Any]]: List of entries with id, content, metadata.
+
+        Side effects:
+            - None.
+
+        Example:
+            >>> entries = sentinel.get_knowledge_entries("test", 5)
+            >>> len(entries) <= 5
+        """
+        results = self.db_manager.search(query=category or "", n_results=limit, filter_type=category)
+        return results
+
     def add_code_example(self, title: str, code: str, explanation: str, metadata: Optional[Dict[str, Any]] = None):
+        """
+        Adds a code example as a knowledge entry.
+
+        Args:
+            title (str): Title of the example.
+            code (str): Code snippet.
+            explanation (str): Explanation of the code.
+            metadata (Optional[Dict[str, Any]]): Additional metadata.
+
+        Returns:
+            str: ID of the added entry.
+
+        Side effects:
+            - Adds to ChromaDB under "code_example" category.
+
+        Example:
+            >>> sentinel.add_code_example("Test Code", "print('Hello')", "Simple print.")
+        """
         content = f"Code: {code}\nExplanation: {explanation}"
         return self.add_knowledge_entry(category="code_example", title=title, content=content, metadata=metadata)
 
     def search_code_examples(self, query: str, n_results: int = 5) -> List[Dict[str, Any]]:
+        """
+        Searches for code examples using semantic search.
+
+        Args:
+            query (str): Search query.
+            n_results (int): Max results. Defaults to 5.
+
+        Returns:
+            List[Dict[str, Any]]: Matching code examples.
+
+        Side effects:
+            - None.
+
+        Example:
+            >>> results = sentinel.search_code_examples("print")
+            >>> "print" in results[0]['content']
+        """
         return self.db_manager.search(query, n_results=n_results, filter_type="code_example")
 
     def verify_knowledge_base_integrity(self) -> bool:
+        """
+        Verifies the integrity of the knowledge base (ChromaDB and JSON files).
+
+        Returns:
+            bool: True if all checks pass.
+
+        Side effects:
+            - Logs warnings on failure.
+
+        Example:
+            >>> sentinel.verify_knowledge_base_integrity()
+            True
+        """
         # Verificar ChromaDB
-        stats = self.db_manager.collection.count() > 0  # Ejemplo simple; expande si necesitas
-        # Verificar JSON/SQLite para global_state y action_history
-        if not self.global_state_file.exists() or not self.action_history_file.exists():
+        if self.db_manager.collection.count() == 0:
+            logger.warning("ChromaDB collection is empty.")
             return False
-        return stats  # Retorna True si todo OK
+
+        # Verificar JSON files
+        if not self.global_state_file.exists() or not self.action_history_file.exists():
+            logger.warning("Global state or action history missing.")
+            return False
+
+        logger.info("Knowledge base integrity verified.")
+        return True
 
     def _load_json(self, file_path: Path) -> Any:
         """
