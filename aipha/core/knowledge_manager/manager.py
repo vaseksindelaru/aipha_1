@@ -55,6 +55,7 @@ class AIPHAConfig:
 from sentence_transformers import SentenceTransformer
 import chromadb
 import numpy as np
+import openai
 
 class SentenceTransformerEmbeddingFunction:
     def __init__(self, model_name: str):
@@ -148,6 +149,32 @@ class CaptureSystem:
             )
             self.capture_manual(step)
 
+class LLMQuerySystem:
+    def __init__(self, config: AIPHAConfig, db_manager: VectorDBManager):
+        self.config = config
+        self.db_manager = db_manager
+        self.client = openai.OpenAI(api_key=self.config.API_KEY)
+        logger.info("LLMQuerySystem inicializado.")
+
+    def query(self, user_query: str) -> str:
+        """Consulta el LLM con contexto recuperado de la DB vectorial."""
+        # Recuperar contexto relevante
+        relevant_docs = self.db_manager.search(user_query, n_results=3)
+        context = "\n".join([doc['content'] for doc in relevant_docs])
+
+        # Construir prompt
+        prompt = f"Contexto:\n{context}\n\nPregunta: {user_query}\n\nRespuesta:"
+
+        # Llamar a OpenAI
+        response = self.client.chat.completions.create(
+            model=self.config.LLM_MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=500,
+            temperature=0.7
+        )
+        return response.choices[0].message.content.strip()
+           
+
 if __name__ == "__main__":
     # Test CaptureSystem
     with open('config.yaml', 'r') as f:
@@ -169,3 +196,8 @@ if __name__ == "__main__":
     capture_system.capture_auto("print('Hello')", "Test context")
     results = db_manager.search("test")
     print(results)
+
+    # Test LLMQuerySystem
+    llm_query_system = LLMQuerySystem(aipha_config, db_manager)
+    query_result = llm_query_system.query("What is the test content?")
+    print(query_result)
