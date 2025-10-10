@@ -89,6 +89,88 @@ class ContextSentinel:
             return False
         return stats  # Retorna True si todo OK
 
+    def _load_json(self, file_path: Path) -> Any:
+        """
+        Método auxiliar interno para cargar datos JSON de un archivo de forma segura.
+        Maneja archivos no existentes, vacíos o errores de decodificación.
+        """
+        if not file_path.exists() or file_path.stat().st_size == 0:
+            # Retorna una lista o un diccionario vacío por defecto según el nombre/contenido esperado.
+            return [] if "history" in file_path.name or "version" in file_path.name else {}
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except json.JSONDecodeError as e:
+            logger.error(f"Error de decodificación JSON en {file_path}: {e}. Retornando contenido por defecto.")
+            return [] if "history" in file_path.name or "version" in file_path.name else {}
+
+    def _save_json(self, file_path: Path, data: Any):
+        """Método auxiliar interno para guardar datos JSON en un archivo de forma legible."""
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2)
+
+    def update_global_state(self, state_update: Dict[str, Any]) -> bool:
+        """
+        Actualiza el estado global del sistema (global_state.json).
+        Es el "tablón de anuncios" donde los agentes dejan y recogen información.
+        Retorna True si la actualización es exitosa, False en caso contrario.
+        """
+        try:
+            current_state = self._load_json(self.global_state_file) # Carga el estado actual.
+            current_state.update(state_update) # Combina el estado actual con las nuevas actualizaciones.
+            current_state["timestamp"] = datetime.now().isoformat() + 'Z' # Actualiza la marca de tiempo.
+
+            self._save_json(self.global_state_file, current_state) # Guarda el estado global actualizado.
+
+            logger.info(f"Estado global actualizado. Claves modificadas: {list(state_update.keys())}")
+            return True
+
+        except Exception as e:
+            logger.error(f"Fallo al actualizar el estado global: {e}")
+            return False
+
+    def get_global_state(self) -> Dict[str, Any]:
+        """
+        Devuelve el estado global actual del sistema.
+        Es cómo los agentes leen el "tablón de anuncios".
+        """
+        return self._load_json(self.global_state_file)
+
+    def record_action(self, action_description: str, agent: str = "ContextSentinel",
+                      component: str = "context_sentinel", status: str = "success",
+                      details: Optional[Dict[str, Any]] = None) -> bool:
+        """
+        Registra una acción en el historial de acciones del sistema (action_history.json).
+        Es el "diario" cronológico de todo lo que hace el sistema.
+        Retorna True si el registro es exitoso, False en caso contrario.
+        """
+        try:
+            action = {
+                "timestamp": datetime.now().isoformat() + 'Z',
+                "action": action_description,
+                "agent": agent,
+                "component": component,
+                "status": status
+            }
+
+            if details:
+                action["details"] = details # Añadimos detalles adicionales si se proporcionan.
+
+            history = self._load_json(self.action_history_file) # Carga el historial existente.
+            history.append(action) # Añade la nueva acción.
+            self._save_json(self.action_history_file, history) # Guarda el historial actualizado.
+
+            logger.info(f"Acción registrada: {action_description}")
+            return True
+
+        except Exception as e:
+            logger.error(f"Fallo al registrar la acción: {e}")
+            return False
+
+    def get_action_history(self) -> List[Dict[str, Any]]:
+        """Devuelve el historial completo de acciones registradas por ContextSentinel."""
+        return self._load_json(self.action_history_file)
+
 if __name__ == "__main__":
     import yaml
     from aipha.core.context_sentinel import ContextSentinel

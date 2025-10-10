@@ -1,104 +1,63 @@
-# main.py
-
-"""
-Punto de entrada de Aipha_1.1.
-Mantiene mínima lógica, delega toda la orquestación a RedesignHelper.
-"""
-
-import sys
 import logging
-from pathlib import Path
 import yaml
-import shutil
+from pathlib import Path
+#import shutil  # Comentar si no se usa para limpieza
 
 from aipha.core.redesign_helper import RedesignHelper
 
-# Configuración de logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    datefmt='%Y-%m-%dT%H:%M:%SZ'
-)
 logger = logging.getLogger(__name__)
 
-
-def load_config(config_path: Path) -> dict:
-    """
-    Carga configuración desde archivo YAML.
-    
-    Args:
-        config_path: Ruta al archivo config.yaml
-    
-    Returns:
-        Diccionario con la configuración del sistema
-    """
-    if not config_path.exists():
-        logger.warning(f"Config no encontrado: {config_path}. Creando por defecto.")
-        
-        default_config_content = """
-system:
-  storage_root: "./aipha_memory_storage"
-
-atomic_update_system:
-  version_history_file_name: "VERSION_HISTORY.json"
-  global_state_file_name: "global_state.json"
-  action_history_file_name: "action_history.json"
-  dependencies_lock_file_name: "dependencies.lock.json"
-  backups_dir_name: "backups"
-  config_dir_name: "config"
-
-context_sentinel:
-  knowledge_base_db_name: "knowledge_base.db"
-  global_state_dir_name: "global_state"
-  global_state_file_name: "current_state.json"
-  action_history_dir_name: "action_history"
-  action_history_file_name: "current_history.json"
-"""
-        config_path.write_text(default_config_content, encoding='utf-8')
-        return yaml.safe_load(default_config_content)
-    
-    with open(config_path, 'r', encoding='utf-8') as f:
-        return yaml.safe_load(f)
-
+def load_config(config_path: str = 'config.yaml') -> dict:
+    config_file = Path(config_path)
+    if not config_file.exists():
+        default_config = {
+            'system': {'storage_root': './aipha_memory_storage'},
+            'knowledge_manager': {  # Añade si no existe
+                'project_root': './',
+                'knowledge_db_path': './aipha_memory_storage/knowledge_base',
+                'logs_path': './aipha_memory_storage/logs',
+                'chroma_persist_dir': './aipha_memory_storage/chroma_db',
+                'collection_name': 'aipha_development',
+                'embedding_model': 'all-MiniLM-L6-v2',
+                'embedding_dimension': 384,
+                'llm_provider': 'openai',
+                'llm_model': 'gpt-3.5-turbo',
+                'api_key_env_var': 'OPENAI_API_KEY',
+                'auto_capture': True,
+                'capture_types': ["decision", "architecture", "implementation", "test", "bug_fix", "optimization", "documentation", "principle"]
+            }
+        }
+        with open(config_file, 'w') as f:
+            yaml.dump(default_config, f)
+        logger.info(f"Config por defecto creada en {config_path}.")
+    with open(config_file, 'r') as f:
+        config = yaml.safe_load(f)
+    return config
 
 def main():
-    """Función principal - mínima lógica de bootstrapping."""
-    logger.info("=" * 60)
-    logger.info("Iniciando Aipha_1.1 - Sistema de Auto-Construcción")
-    logger.info("=" * 60)
+    logging.basicConfig(level=logging.INFO)
     
-    # 1. Cargar configuración
-    config = load_config(Path("config.yaml"))
+    config = load_config()
     storage_root = Path(config['system']['storage_root'])
     
-    # 2. Limpieza opcional (solo para demos/desarrollo)
-    # COMENTAR ESTA SECCIÓN EN PRODUCCIÓN
-    if storage_root.exists():
-        logger.info(f"Limpiando {storage_root} para demostración limpia...")
-        try:
-            shutil.rmtree(storage_root)
-            logger.info("Directorio limpiado exitosamente")
-        except OSError as e:
-            logger.warning(f"No se pudo limpiar {storage_root}: {e}")
+    # COMENTADO: No borrar storage_root para preservar ChromaDB y datos persistentes
+    # if storage_root.exists():
+    #     shutil.rmtree(storage_root)
+    #     logger.info(f"Directorio de almacenamiento limpio: {storage_root}")
+    # storage_root.mkdir(parents=True, exist_ok=True)
     
-    # 3. Crear e inicializar RedesignHelper
-    redesign_helper = RedesignHelper(config)
+    # Instancia RedesignHelper (que integra ContextSentinel y Knowledge Manager)
+    aipha_system = RedesignHelper(config)
     
-    if not redesign_helper.initialize():
-        logger.error("Fallo crítico en inicialización del sistema")
-        return 1
+    # Inicialización del sistema
+    aipha_system.initialize()
     
-    # 4. Mostrar estado del sistema
-    status = redesign_helper.get_system_status()
-    logger.info(f"Estado del sistema: {status}")
+    # Demostración de flujo ATR (o cualquier test)
+    aipha_system.demonstrate_atr_proposal_flow()
     
-    # 5. Placeholder para ciclo de trabajo principal
-    # TODO: Aquí irá la lógica del bucle principal en fases futuras
-    logger.info("Sistema Aipha_1.1 inicializado y listo")
-    logger.info("=" * 60)
-    
-    return 0
-
+    # Obtener estado del sistema
+    status = aipha_system.get_system_status()
+    logger.info(f"Estado final del sistema: {status}")
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
