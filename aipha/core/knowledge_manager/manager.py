@@ -133,7 +133,8 @@ class CaptureSystem:
         """Captura manual de un paso de desarrollo en la DB vectorial."""
         id = step.id
         content = f"Type: {step.type}\nTitle: {step.title}\nContent: {step.content}\nMetadata: {step.metadata}"
-        self.db_manager.add_documents([content], [id], [step.metadata])
+        metadata = {"type": step.type, **step.metadata}
+        self.db_manager.add_documents([content], [id], [metadata])
 
     def capture_auto(self, code_snippet: str, context: str):
         """Captura automática de un paso de desarrollo basado en código y contexto."""
