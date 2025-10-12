@@ -67,11 +67,41 @@ class AiphaShadow:
         """Sincroniza con el repositorio actual"""
         if repo_path is None:
             repo_path = self.config['shadow']['sync']['source_path']
-        # Escanear archivos modificados y actualizar embeddings
-        # Por ahora, un ejemplo simple
         logging.info(f"Sincronizando con el repositorio: {repo_path}")
-        # Aquí iría la lógica para detectar cambios
-        # y actualizar embeddings en ChromaDB
+
+        # Extensiones de archivo a indexar
+        file_extensions = ['.py', '.yaml', '.yml', '.md', '.txt']
+
+        # Escanear archivos
+        repo_path_obj = Path(repo_path)
+        documents = []
+        metadatas = []
+        ids = []
+
+        for file_path in repo_path_obj.rglob('*'):
+            if file_path.is_file() and file_path.suffix in file_extensions:
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                    if content.strip():  # Solo archivos con contenido
+                        documents.append(content)
+                        metadatas.append({'file_path': str(file_path.relative_to(repo_path_obj))})
+                        ids.append(str(file_path.relative_to(repo_path_obj)))
+                except Exception as e:
+                    logging.warning(f"Error leyendo {file_path}: {e}")
+
+        if documents:
+            # Crear embeddings y añadir a ChromaDB
+            embeddings = self.embedder.encode(documents)
+            self.collection.add(
+                embeddings=embeddings.tolist(),
+                documents=documents,
+                metadatas=metadatas,
+                ids=ids
+            )
+            logging.info(f"Añadidos {len(documents)} documentos a la base de datos")
+        else:
+            logging.info("No se encontraron documentos para indexar")
     
     def query(self, question: str, llm: str = None) -> str:
         """Consulta usando el LLM especificado"""
@@ -114,11 +144,28 @@ class AiphaShadow:
         return response['choices'][0]['message']['content']
     
     def _query_gemini(self, context: str, question: str) -> str:
-        """Consulta con Gemini"""
-        model_name = self.config['shadow']['available_llms']['gemini']['model']
-        model = genai.GenerativeModel(model_name)
-        response = model.generate_content(f"Contexto:\n{context}\n\nPregunta: {question}")
-        return response.text
+        """Consulta con Gemini con manejo de errores"""
+        try:
+            # Intentar con el nombre de modelo antiguo (por si acerta)
+            model_name = self.config['shadow']['available_llms']['gemini']['model']
+            model = genai.GenerativeModel(model_name)
+            response = model.generate_content(f"Contexto:\n{context}\n\nPregunta: {question}")
+            return response.text
+        except Exception as e:
+            # Si falla por el modelo no encontrado, intentar con un nombre actualizado
+            if "not found" in str(e) or "gemini-pro" in str(e):
+                logging.warning(f"Modelo {model_name} no encontrado. Intentando con 'gemini-2.5-pro'...")
+                try:
+                    # Usar un nombre de modelo que sí exista en la API actual
+                    model = genai.GenerativeModel('gemini-1.5-pro')
+                    response = model.generate_content(f"Contexto:\n{context}\n\nPregunta: {question}")
+                    return response.text
+                except Exception as e2:
+                    logging.error(f"Error con Gemini (modelo actualizado): {e2}")
+                    return f"Error: No se pudo contactar con Gemini. Verifica tu API key y el modelo."
+            else:
+                logging.error(f"Error de Gemini: {e}")
+                return f"Error al contactar con Gemini: {e}"
     
     def _query_claude(self, context: str, question: str) -> str:
         """Consulta con Claude (si tienes API key)"""
