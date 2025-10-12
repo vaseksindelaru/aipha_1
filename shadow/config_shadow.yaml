@@ -1,0 +1,28 @@
+system:
+  storage_root: ./aipha_memory_storage
+
+knowledge_manager:
+  project_root: ./
+  knowledge_db_path: ./aipha_memory_storage/knowledge_base
+  logs_path: ./aipha_memory_storage/logs
+  chroma_persist_dir: ./aipha_memory_storage/chroma_db
+  collection_name: aipha_development
+  embedding_model: all-MiniLM-L6-v2
+  embedding_dimension: 384
+  llm_provider: openai
+  llm_model: gpt-3.5-turbo
+  api_key_env_var: OPENAI_API_KEY
+  auto_capture: true
+  capture_types: [decision, architecture, implementation, test, bug_fix, optimization, documentation, principle]
+
+# NUEVO: Soporte para múltiples LLMs
+llm_configs:
+  openai:
+    api_key_env_var: OPENAI_API_KEY
+    model: gpt-3.5-turbo
+  gemini:
+    api_key_env_var: GOOGLE_API_KEY
+    model: gemini-pro
+  claude:
+    api_key_env_var: ANTHROPIC_API_KEY
+    model: claude-3-sonnet-20241022

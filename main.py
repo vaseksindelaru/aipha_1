@@ -4,6 +4,7 @@ from pathlib import Path
 #import shutil  # Comentar si no se usa para limpieza
 
 from aipha.core.redesign_helper import RedesignHelper
+from shadow.aipha_shadow import AiphaShadow  # NUEVA importación
 
 logger = logging.getLogger(__name__)
 
@@ -52,8 +53,19 @@ def main():
     # Inicialización del sistema
     aipha_system.initialize()
     
+    # NUEVO: Sistema Shadow para consultas
+    shadow_system = AiphaShadow(config)
+    
+    # Sincronizar shadow con el repositorio actual
+    shadow_system.sync_with_repository()
+    
     # Demostración de flujo ATR (o cualquier test)
     aipha_system.demonstrate_atr_proposal_flow()
+    
+    # NUEVO: Ejemplo de consultas con diferentes LLMs
+    print("=== Consultas con AiphaShadow ===")
+    print("OpenAI:", shadow_system.query("¿Qué es Aipha?", "openai"))
+    print("Gemini:", shadow_system.query("¿Qué es Aipha?", "gemini"))
     
     # Obtener estado del sistema
     status = aipha_system.get_system_status()
