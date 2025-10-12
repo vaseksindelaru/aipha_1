@@ -1,8 +1,8 @@
 # shadow/config_shadow.yaml
 shadow:
   # Rutas para el almacenamiento de datos del sistema Shadow
-  storage_path: './shadow/shadow_storage'      # Base para todos los datos del shadow
-  vector_db_path: './shadow/shadow_storage/vector_db' # Ruta específica para la base de datos vectorial ChromaDB
+  storage_path: './shadow_storage'      # Base para todos los datos del shadow
+  vector_db_path: './shadow_storage/vector_db' # Ruta específica para la base de datos vectorial ChromaDB
   
   # Configuración de la base de datos vectorial (ChromaDB)
   collection_name: 'aipha_shadow_collection' # Nombre de la colección donde se guardarán los documentos
@@ -25,7 +25,7 @@ shadow:
 
   # Configuración de la sincronización con el repositorio principal
   sync:
-    source_path: '../aipha'                # Ruta al directorio del proyecto Aipha principal
+    source_path: '../'                # Ruta al directorio del proyecto Aipha principal
     # Opcionales para una lógica de sincronización más avanzada:
     # file_extensions: ['.py', '.yaml', '.md']   # Tipos de archivo a indexar
     # ignore_dirs: ['.git', '__pycache__', 'node_modules'] # Directorios a excluir del escaneo
