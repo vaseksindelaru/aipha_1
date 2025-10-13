@@ -15,6 +15,7 @@ from .context_sentinel import ContextSentinel
 from .tools.change_proposer import ChangeProposer
 from .tools.proposal_evaluator import ProposalEvaluator, EvaluationResult
 from .tools.codecraft_sage import CodecraftSage, ImplementationResult
+from .tools.basic_rules_proposer import BasicRulesChangeProposer
 from .knowledge_manager.manager import DevelopmentStep
 
 logger = logging.getLogger(__name__)
@@ -42,7 +43,15 @@ class RedesignHelper:
         self.config = config
         self.critical_memory_rules = CriticalMemoryRules(self.config)
         self.context_sentinel = ContextSentinel(self.config)  # Ahora usa Knowledge Manager internamente
-        self.change_proposer = ChangeProposer(self.config)  # Ejemplo de agente
+        self.change_proposer = ChangeProposer(self.config)  # Ejemplo de agente hardcodeado
+
+        # Inicializar agente LLM-based solo si hay API key
+        try:
+            self.basic_rules_proposer = BasicRulesChangeProposer(self.config)  # Nuevo agente LLM-based
+        except ValueError:
+            logger.warning("BasicRulesChangeProposer no inicializado: OPENAI_API_KEY no configurada")
+            self.basic_rules_proposer = None
+
         self.proposal_evaluator = ProposalEvaluator(self.config, self.context_sentinel)  # Nuevo agente
         self.codecraft_sage = CodecraftSage(self.config)  # Nuevo agente para implementación
         self.initialized = False
@@ -181,25 +190,32 @@ Required error handling:
     
     # Métodos placeholder para agentes (se implementarán en Fase 1)
     
-    def propose_change(self, directive: str) -> Optional[ChangeProposal]:
+    def propose_change(self, directive: str, use_llm: bool = False) -> Optional[ChangeProposal]:
         """
         Genera una propuesta de cambio basada en una directiva.
-        
+
         Args:
             directive: Descripción de alto nivel del cambio deseado
-        
+            use_llm: Si True, usa el agente LLM-based; si False, usa el hardcodeado
+
         Returns:
             ChangeProposal si se generó exitosamente, None en caso contrario
-        
+
         Raises:
             RuntimeError: Si el sistema no está inicializado
         """
         if not self.initialized:
             raise RuntimeError("RedesignHelper no está inicializado. Llama a initialize() primero.")
-        
-        # TODO: Implementar en Fase 1 con ChangeProposer real
-        logger.warning("propose_change: No implementado aún (Fase 1)")
-        return None
+
+        if use_llm:
+            if self.basic_rules_proposer is None:
+                logger.error("LLM-based proposer no disponible: OPENAI_API_KEY no configurada")
+                return None
+            logger.info(f"Generando propuesta usando LLM para directiva: '{directive}'")
+            return self.basic_rules_proposer.generate_proposal(directive, self.critical_memory_rules)
+        else:
+            logger.info(f"Generando propuesta hardcodeada para directiva: '{directive}'")
+            return self.change_proposer.generate_proposal(directive)
     
     def evaluate_proposal(self, proposal: ChangeProposal) -> Dict[str, Any]:
         """
@@ -276,6 +292,66 @@ Required error handling:
                 logger.warning(f"Implementación ATR fallida: {implementation.message}")
         else:
             logger.info(f"Propuesta ATR no aprobada. Score: {evaluation['score']:.2f}")
+
+    def run_interactive_change_cycle(self, directive: str, use_llm: bool = False):
+        """
+        Ejecuta un ciclo completo de propuesta-revisión-aplicación de forma interactiva.
+        """
+        print("\n--- [INICIO] Ciclo de Cambio Interactivo ---")
+
+        # 1. Generar propuesta
+        proposal = self.propose_change(directive, use_llm=use_llm)
+
+        if not proposal:
+            print("\n--- [FIN] No se pudo generar una propuesta. Finalizando ciclo. ---")
+            return
+
+        # 2. Mostrar propuesta para revisión humana
+        print("\n--- Propuesta de Cambio Generada ---")
+        print(f"ID del Cambio: {proposal.change_id}")
+        print(f"Versión Propuesta: {proposal.version}")
+        print(f"Autor: {proposal.author}")
+        print("\n[Descripción]")
+        print(proposal.description)
+        print("\n[Justificación]")
+        print(proposal.justification)
+        print("\n[Archivos Afectados]")
+        for file in proposal.files_affected:
+            print(f"- {file}")
+        print("\n[Contenido del Diff]")
+        print("--------------------------------------")
+        print(proposal.diff_content)
+        print("--------------------------------------")
+
+        # 3. Solicitar aprobación humana
+        while True:
+            action = input("\n¿Qué deseas hacer? [a]probar / [r]echazar / [c]ancelar: ").lower()
+            if action in ['a', 'r', 'c']:
+                break
+            print("Opción no válida. Por favor, elige 'a', 'r', o 'c'.")
+
+        # 4. Procesar la decisión
+        if action == 'a':
+            print("Aprobando propuesta...")
+            if self.critical_memory_rules.approve_change(proposal, "HumanOperator"):
+                print("Aplicando actualización atómica...")
+                if self.critical_memory_rules.apply_atomic_update(proposal):
+                    print(f"¡Éxito! El sistema ha sido actualizado a la versión {self.critical_memory_rules.get_current_version()}.")
+                else:
+                    print("¡ERROR CRÍTICO! Falló la aplicación de la actualización atómica.")
+            else:
+                print("ERROR: No se pudo aprobar la propuesta.")
+
+        elif action == 'r':
+            reason = input("Introduce una razón para el rechazo: ")
+            print("Rechazando propuesta...")
+            self.critical_memory_rules.reject_change(proposal, "HumanOperator", reason)
+            print("La propuesta ha sido rechazada y registrada.")
+
+        else: # action == 'c'
+            print("Ciclo de cambio cancelado por el usuario.")
+
+        print("\n--- [FIN] Ciclo de Cambio Interactivo ---")
 
     def get_system_status(self) -> Dict[str, Any]:
         """
