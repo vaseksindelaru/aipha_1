@@ -50,21 +50,18 @@ def main():
     # Instancia RedesignHelper (que integra ContextSentinel y Knowledge Manager)
     aipha_system = RedesignHelper(config)
     
-    # Inicialización del sistema
-    aipha_system.initialize()
-    
     # NUEVO: Sistema Shadow para consultas
-    shadow_system = AiphaShadow(config)
+    shadow_system = AiphaShadow()
     
-    # Sincronizar shadow con el repositorio actual
-    shadow_system.sync_with_repository()
+    # Sincronizar shadow con el repositorio actual (comentado para evitar bucle)
+    # shadow_system.sync_with_repository()
     
     # Demostración de flujo ATR (o cualquier test)
     aipha_system.demonstrate_atr_proposal_flow()
     
     # NUEVO: Ejemplo de consultas con diferentes LLMs
     print("=== Consultas con AiphaShadow ===")
-    print("OpenAI:", shadow_system.query("¿Qué es Aipha?", "openai"))
+    # print("OpenAI:", shadow_system.query("¿Qué es Aipha?", "openai"))  # Comentado por compatibilidad OpenAI v1
     print("Gemini:", shadow_system.query("¿Qué es Aipha?", "gemini"))
     
     # Obtener estado del sistema

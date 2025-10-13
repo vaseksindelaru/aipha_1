@@ -40,6 +40,7 @@ class RedesignHelper:
         self.critical_memory_rules = CriticalMemoryRules(self.config)
         self.context_sentinel = ContextSentinel(self.config)  # Ahora usa Knowledge Manager internamente
         self.change_proposer = ChangeProposer(self.config)  # Ejemplo de agente
+        self.initialized = False
 
         self.initialize()
         logger.info("RedesignHelper inicializado con Knowledge Manager integrado.")
@@ -53,6 +54,8 @@ class RedesignHelper:
 
         # Cargar conocimiento inicial si es necesario
         self._load_base_knowledge()
+        self.initialized = True
+        return True
     
     def _load_base_knowledge(self):
         # Ejemplo: Añadir conocimiento base usando el nuevo sistema
@@ -108,9 +111,9 @@ class RedesignHelper:
         return {"approved": False, "reason": "Not implemented"}
     
     def demonstrate_atr_proposal_flow(self):
-        proposal = self.change_proposer.generate_proposal("ATR Enhancement")  # Asume que generate_proposal usa LLM si aplica
-        # ... (resto del flujo)
-        logger.info("Demostración de flujo ATR completada.")
+        proposal = self.change_proposer.generate_proposal("ATR")
+        logger.info(f"Propuesta ATR generada: {proposal}")
+        # Aquí vendría approve/reject en subpasos futuros
 
     def get_system_status(self) -> Dict[str, Any]:
         """
