@@ -14,6 +14,7 @@ from .atomic_update_system import CriticalMemoryRules, ChangeProposal, ApprovalS
 from .context_sentinel import ContextSentinel
 from .tools.change_proposer import ChangeProposer
 from .tools.proposal_evaluator import ProposalEvaluator, EvaluationResult
+from .tools.codecraft_sage import CodecraftSage, ImplementationResult
 from .knowledge_manager.manager import DevelopmentStep
 
 logger = logging.getLogger(__name__)
@@ -43,6 +44,7 @@ class RedesignHelper:
         self.context_sentinel = ContextSentinel(self.config)  # Ahora usa Knowledge Manager internamente
         self.change_proposer = ChangeProposer(self.config)  # Ejemplo de agente
         self.proposal_evaluator = ProposalEvaluator(self.config, self.context_sentinel)  # Nuevo agente
+        self.codecraft_sage = CodecraftSage(self.config)  # Nuevo agente para implementación
         self.initialized = False
 
         self.initialize()
@@ -91,6 +93,86 @@ class RedesignHelper:
             category="evaluation_criteria",
             title="Proposal Evaluation Criteria - Priority Weighting",
             content="Priority levels determine evaluation thresholds: Critical (>0.8 overall score required), High (>0.7), Medium (>0.6), Low (>0.5). Critical proposals require additional security review. High priority proposals should demonstrate clear business justification."
+        )
+
+        # Add code generation templates and testing patterns
+        self.context_sentinel.add_knowledge_entry(
+            category="code_templates",
+            title="ATR Implementation Template",
+            content="""Template for implementing ATR-based dynamic barriers in trading engines.
+
+Key components:
+1. ATR calculation using rolling mean of True Range
+2. Dynamic TP/SL calculation using ATR multipliers
+3. Position labeling logic with timeout handling
+4. Parameter validation and error handling
+
+Required imports: pandas, numpy
+Required columns: high, low, close
+Optional: volume for enhanced ATR calculation""",
+            metadata={"language": "python", "framework": "pandas", "domain": "trading"}
+        )
+
+        self.context_sentinel.add_knowledge_entry(
+            category="testing_patterns",
+            title="Trading Engine Test Patterns",
+            content="""Comprehensive testing patterns for trading engines:
+
+1. Unit Tests:
+   - Parameter validation (positive values, valid ranges)
+   - ATR calculation accuracy
+   - Edge cases (NaN values, empty data)
+
+2. Integration Tests:
+   - Take Profit scenarios (price hits TP level)
+   - Stop Loss scenarios (price hits SL level)
+   - Timeout scenarios (position held to time limit)
+   - Multiple position handling
+
+3. Property-based Tests:
+   - Invariant: labels should be -1, 0, or 1
+   - Invariant: no positions should exceed time limit
+   - Invariant: TP/SL levels should be calculated correctly
+
+4. Performance Tests:
+   - Large dataset processing
+   - Memory usage validation
+   - Execution time benchmarks""",
+            metadata={"framework": "pytest", "domain": "trading", "test_types": "unit,integration,property"}
+        )
+
+        self.context_sentinel.add_knowledge_entry(
+            category="code_templates",
+            title="Pandas Trading Engine Boilerplate",
+            content="""Standard boilerplate for pandas-based trading engines:
+
+class BaseTradingEngine:
+    def __init__(self, **kwargs):
+        self.params = kwargs
+        self._validate_parameters()
+
+    def _validate_parameters(self):
+        '''Validate all parameters have correct types and ranges'''
+        pass
+
+    def _calculate_indicators(self, data: pd.DataFrame) -> pd.DataFrame:
+        '''Calculate required technical indicators'''
+        pass
+
+    def label_events(self, data: pd.DataFrame, events: pd.Series) -> pd.Series:
+        '''Main labeling logic - to be implemented by subclasses'''
+        raise NotImplementedError
+
+    def get_parameters(self) -> Dict[str, Any]:
+        '''Return current parameter configuration'''
+        return self.params.copy()
+
+Required error handling:
+- Validate input data structure
+- Handle NaN/inf values
+- Check for required columns
+- Validate date ranges and sorting""",
+            metadata={"language": "python", "framework": "pandas", "pattern": "template_method"}
         )
 
         # Añadir más entradas como "agent_roles", "protocol_flow", etc.
@@ -167,7 +249,7 @@ class RedesignHelper:
             }
     
     def demonstrate_atr_proposal_flow(self):
-        """Demuestra el flujo completo de propuesta ATR: generación + evaluación."""
+        """Demuestra el flujo completo de propuesta ATR: generación + evaluación + implementación."""
         proposal = self.change_proposer.generate_proposal("ATR")
         logger.info(f"Propuesta ATR generada: {proposal}")
 
@@ -176,8 +258,22 @@ class RedesignHelper:
         logger.info(f"Evaluación ATR completada: {evaluation}")
 
         if evaluation["approved"]:
-            logger.info("Propuesta ATR evaluada positivamente. Proceder a aprobación.")
-            # Aquí vendría approve_change en subpasos futuros
+            logger.info("Propuesta ATR evaluada positivamente. Proceder a implementación.")
+
+            # Nuevo: Implementar el cambio usando CodecraftSage
+            implementation = self.codecraft_sage.implement_change(proposal)
+            logger.info(f"Implementación ATR completada: {implementation.message}")
+
+            if implementation.success:
+                logger.info("Implementación ATR exitosa. Código y tests generados.")
+                logger.info(f"Archivos a modificar: {implementation.files_modified}")
+                logger.info(f"Tests a crear: {implementation.test_files_created}")
+
+                # Aquí vendría apply_atomic_update en Fase 2
+                # self.critical_memory_rules.apply_atomic_update(proposal)
+                logger.info("Cambio listo para aplicación atómica (Fase 2).")
+            else:
+                logger.warning(f"Implementación ATR fallida: {implementation.message}")
         else:
             logger.info(f"Propuesta ATR no aprobada. Score: {evaluation['score']:.2f}")
 
