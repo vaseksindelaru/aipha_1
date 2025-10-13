@@ -91,15 +91,23 @@ class AiphaShadow:
                     logging.warning(f"Error leyendo {file_path}: {e}")
 
         if documents:
-            # Crear embeddings y añadir a ChromaDB
-            embeddings = self.embedder.encode(documents)
-            self.collection.add(
-                embeddings=embeddings.tolist(),
-                documents=documents,
-                metadatas=metadatas,
-                ids=ids
-            )
-            logging.info(f"Añadidos {len(documents)} documentos a la base de datos")
+            # Procesar en lotes para evitar límite de ChromaDB
+            batch_size = 100  # Ajustar según necesidad
+            for i in range(0, len(documents), batch_size):
+                batch_docs = documents[i:i+batch_size]
+                batch_metas = metadatas[i:i+batch_size]
+                batch_ids = ids[i:i+batch_size]
+
+                # Crear embeddings para el lote
+                embeddings = self.embedder.encode(batch_docs)
+                self.collection.add(
+                    embeddings=embeddings.tolist(),
+                    documents=batch_docs,
+                    metadatas=batch_metas,
+                    ids=batch_ids
+                )
+                logging.info(f"Añadidos {len(batch_docs)} documentos del lote {i//batch_size + 1}")
+            logging.info(f"Sincronización completada: {len(documents)} documentos totales")
         else:
             logging.info("No se encontraron documentos para indexar")
     
