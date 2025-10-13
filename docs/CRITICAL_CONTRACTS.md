@@ -33,3 +33,13 @@
 - **Privacy**: No sensitive financial/trading data in LLM queries; log queries/responses in anonymized format for debugging.
 - **Error Handling**: Comprehensive try/catch blocks with graceful degradation; API failures return informative error messages instead of crashes.
 - **Content Safety**: LLM responses validated for relevance; fallback to "No relevant context found" if retrieval fails.
+
+## 8. Proposal Evaluation Protocol (Rule-Based + RAG)
+- **Evaluation Criteria Categories**: Feasibility (0.3 weight), Impact (0.4 weight), Risk (0.3 weight, inverted).
+- **Knowledge Retrieval**: Query evaluation_criteria from vector DB for contextual assessment.
+- **LLM Integration**: Use RAG prompt with retrieved criteria for contextual evaluation; fallback to rule-based if LLM unavailable.
+- **Score Calculation**: Weighted average with configurable thresholds (default 0.7 for approval).
+- **Response Parsing**: Regex-based extraction of numerical scores from LLM responses.
+- **Fallback Strategy**: Rule-based evaluation when LLM fails (API key issues, network problems).
+- **Logging**: Comprehensive evaluation logging with scores, criteria used, and approval status.
+- **Error Handling**: Conservative scoring (0.5) on evaluation failures with detailed error reporting.
