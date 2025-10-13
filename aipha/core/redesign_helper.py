@@ -13,6 +13,7 @@ from datetime import datetime
 from .atomic_update_system import CriticalMemoryRules, ChangeProposal, ApprovalStatus
 from .context_sentinel import ContextSentinel
 from .tools.change_proposer import ChangeProposer
+from .knowledge_manager.manager import DevelopmentStep
 
 logger = logging.getLogger(__name__)
 

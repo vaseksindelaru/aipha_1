@@ -1,16 +1,39 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 import logging
 import os
-import yaml
+import uuid
+from datetime import datetime
+
+from sentence_transformers import SentenceTransformer
+import chromadb
+
+from openai import OpenAI
 
 logger = logging.getLogger(__name__)
 
 @dataclass
 class AIPHAConfig:
-    """Configuration class for the Knowledge Manager system, loaded from global config.yaml."""
-    
+    """Configuración central del sistema de conocimiento, cargada del config.yaml global.
+
+    Esta clase carga y valida la configuración para el Knowledge Manager, creando directorios necesarios.
+
+    Args:
+        global_config (Dict[str, Any]): Diccionario de configuración global cargado de config.yaml.
+
+    Side effects:
+        - Crea directorios si no existen (PROJECT_ROOT, KNOWLEDGE_DB_PATH, etc.).
+        - Logs la inicialización.
+
+    Example:
+        >>> with open('config.yaml', 'r') as f:
+        >>>     config = yaml.safe_load(f)
+        >>> aipha_config = AIPHAConfig(config)
+        >>> print(aipha_config.PROJECT_ROOT)
+        Path('./')
+    """
+
     PROJECT_ROOT: Path
     KNOWLEDGE_DB_PATH: Path
     LOGS_PATH: Path
@@ -23,22 +46,10 @@ class AIPHAConfig:
     AUTO_CAPTURE: bool
     CAPTURE_TYPES: List[str]
     API_KEY: Optional[str] = None  # Se lee de env var
-    
+
     def __init__(self, global_config: Dict[str, Any]):
-        """
-        Initializes AIPHAConfig from global config dict.
-
-        Args:
-            global_config (Dict[str, Any]): Global configuration dictionary.
-
-        Side effects:
-            - Sets paths and creates directories if they don't exist.
-
-        Example:
-            >>> config = AIPHAConfig({'knowledge_manager': {'project_root': './'}})
-        """
         km_config = global_config.get('knowledge_manager', {})
-        
+
         self.PROJECT_ROOT = Path(km_config.get('project_root', "./"))
         self.KNOWLEDGE_DB_PATH = Path(km_config.get('knowledge_db_path', "./aipha_project/knowledge_base"))
         self.LOGS_PATH = Path(km_config.get('logs_path', "./aipha_project/logs"))
@@ -48,26 +59,40 @@ class AIPHAConfig:
         self.EMBEDDING_DIMENSION = km_config.get('embedding_dimension', 384)
         self.LLM_PROVIDER = km_config.get('llm_provider', "openai")
         self.LLM_MODEL = km_config.get('llm_model', "gpt-3.5-turbo")
-        
+
         # API_KEY siempre se lee de la variable de entorno para seguridad
         self.API_KEY = os.getenv(km_config.get('api_key_env_var', "OPENAI_API_KEY"))
-        
+
         self.AUTO_CAPTURE = km_config.get('auto_capture', True)
         self.CAPTURE_TYPES = km_config.get('capture_types', [
             "decision", "architecture", "implementation",
             "test", "bug_fix", "optimization", "documentation", "principle"
         ])
-        
+
         # Crear directorios si no existen
-        for path_attr in [self.PROJECT_ROOT, self.KNOWLEDGE_DB_PATH, 
+        for path_attr in [self.PROJECT_ROOT, self.KNOWLEDGE_DB_PATH,
                           self.LOGS_PATH, self.CHROMA_PERSIST_DIR]:
             path_attr.mkdir(parents=True, exist_ok=True)
         logger.info(f"AIPHAConfig cargada y directorios verificados.")
 
-from sentence_transformers import SentenceTransformer
-import chromadb
-import numpy as np
-import openai
+@dataclass
+class DevelopmentStep:
+    """Representa un paso de desarrollo o entrada de conocimiento para capturar en la DB.
+
+    Atributos:
+        id (str): ID único del paso.
+        timestamp (str): Timestamp ISO del paso.
+        type (str): Tipo/categoría (e.g., "decision").
+        title (str): Título descriptivo.
+        content (str): Contenido principal.
+        metadata (Dict[str, Any]): Metadatos adicionales.
+    """
+    id: str
+    timestamp: str
+    type: str
+    title: str
+    content: str
+    metadata: Dict[str, Any]
 
 class SentenceTransformerEmbeddingFunction:
     """
@@ -169,22 +194,22 @@ class SentenceTransformerEmbeddingFunction:
         return f"sentence-transformers-{self.model_name}"
 
 class VectorDBManager:
-    """
-    Manages the vector database using ChromaDB for knowledge storage and retrieval.
+    """Gestiona la base de datos vectorial con ChromaDB para embeddings y búsquedas semánticas.
+
+    Args:
+        config (AIPHAConfig): Configuración del Knowledge Manager.
+
+    Side effects:
+        - Inicializa cliente ChromaDB persistente.
+        - Crea/carga colección con embedding function.
+
+    Example:
+        >>> db_manager = VectorDBManager(config)
+        >>> db_manager.add_documents(["Test doc"], ["id1"])
+        >>> results = db_manager.search("Test")
+        >>> len(results) > 0
     """
     def __init__(self, config: AIPHAConfig):
-        """
-        Initializes the Vector DB Manager with ChromaDB.
-
-        Args:
-            config (AIPHAConfig): Configuration object.
-
-        Side effects:
-            - Creates ChromaDB client and collection if not exists.
-
-        Example:
-            >>> db_manager = VectorDBManager(config)
-        """
         self.config = config
         self.embedding_function = SentenceTransformerEmbeddingFunction(self.config.EMBEDDING_MODEL)
         self.client = chromadb.PersistentClient(path=str(self.config.CHROMA_PERSIST_DIR))
@@ -196,19 +221,18 @@ class VectorDBManager:
         logger.info(f"VectorDBManager inicializado en {self.config.CHROMA_PERSIST_DIR}.")
 
     def add_documents(self, documents: List[str], ids: List[str], metadatas: Optional[List[Dict[str, Any]]] = None):
-        """
-        Adds documents to the ChromaDB collection.
+        """Añade documentos a la colección ChromaDB.
 
         Args:
-            documents (List[str]): List of document contents.
-            ids (List[str]): Unique IDs for documents.
-            metadatas (Optional[List[Dict[str, Any]]]): Metadata for each document.
+            documents (List[str]): Contenidos de documentos.
+            ids (List[str]): IDs únicos.
+            metadatas (Optional[List[Dict[str, Any]]]): Metadatos opcionales.
 
         Side effects:
-            - Persists to ChromaDB.
+            - Persiste en ChromaDB; genera embeddings automáticamente.
 
         Example:
-            >>> db_manager.add_documents(["Test"], ["id1"])
+            >>> db_manager.add_documents(["Doc1"], ["id1"], [{"type": "test"}])
         """
         self.collection.add(
             documents=documents,
@@ -217,22 +241,22 @@ class VectorDBManager:
         )
 
     def search(self, query: str, n_results: int = 5, filter_type: Optional[str] = None) -> List[Dict[str, Any]]:
-        """
-        Searches the vector DB for relevant documents.
+        """Busca documentos semánticamente en la colección.
 
         Args:
-            query (str): Search query.
-            n_results (int): Number of results to return.
-            filter_type (Optional[str]): Filter by metadata type.
+            query (str): Consulta de búsqueda.
+            n_results (int): Número máximo de resultados (default: 5).
+            filter_type (Optional[str]): Filtrar por metadata 'type' (default: None).
 
         Returns:
-            List[Dict[str, Any]]: List of matching documents with id, content, metadata.
+            List[Dict[str, Any]]: Resultados con id, content, metadata.
 
         Side effects:
             - None.
 
         Example:
-            >>> results = db_manager.search("test", 5)
+            >>> results = db_manager.search("test query", filter_type="test")
+            >>> results[0]['content']  # "Matching doc"
         """
         where = {"type": filter_type} if filter_type else None
         results = self.collection.query(
@@ -240,78 +264,58 @@ class VectorDBManager:
             n_results=n_results,
             where=where
         )
-        return [{"id": id, "content": doc, "metadata": meta} for id, doc, meta in zip(results['ids'][0], results['documents'][0], results['metadatas'][0])]
-
-from dataclasses import asdict
-from datetime import datetime
-import uuid
-
-@dataclass
-class DevelopmentStep:
-    id: str
-    timestamp: str
-    type: str
-    title: str
-    content: str
-    metadata: Dict[str, Any]
+        return [{"id": id, "content": doc, "metadata": meta} for id, doc, meta in zip(results['ids'][0], results['documents'][0], results['metadatas'][0]) if results['ids']]  # Evita error si vacío
 
 class CaptureSystem:
-    """
-    Handles capturing and storing development steps in the vector DB.
+    """Sistema para capturar entradas de conocimiento manual/auto en la DB vectorial.
+
+    Args:
+        config (AIPHAConfig): Configuración.
+        db_manager (VectorDBManager): Manager de DB.
+
+    Side effects:
+        - Logs capturas.
+
+    Example:
+        >>> step = DevelopmentStep(id="1", timestamp="now", type="test", title="Test", content="Content", metadata={})
+        >>> capture_system.capture_manual(step)
     """
     def __init__(self, config: AIPHAConfig, db_manager: VectorDBManager):
-        """
-        Initializes the Capture System.
-
-        Args:
-            config (AIPHAConfig): Configuration object.
-            db_manager (VectorDBManager): Vector DB manager instance.
-
-        Side effects:
-            - None.
-
-        Example:
-            >>> capture_system = CaptureSystem(config, db_manager)
-        """
         self.config = config
         self.db_manager = db_manager
         logger.info("CaptureSystem inicializado.")
 
     def capture_manual(self, step: DevelopmentStep):
-        """
-        Captures a manual development step in the vector DB.
+        """Captura manual de un paso de desarrollo en la DB vectorial.
 
         Args:
-            step (DevelopmentStep): The development step to capture.
+            step (DevelopmentStep): Paso a capturar.
 
         Side effects:
-            - Adds document to vector DB.
+            - Añade a ChromaDB.
 
         Example:
-            >>> step = DevelopmentStep(...)
             >>> capture_system.capture_manual(step)
         """
         id = step.id
         content = f"Type: {step.type}\nTitle: {step.title}\nContent: {step.content}\nMetadata: {step.metadata}"
-        metadata = {"type": step.type, **step.metadata}
-        self.db_manager.add_documents([content], [id], [metadata])
+        self.db_manager.add_documents([content], [id], [step.metadata])
+        logger.info(f"Capturado manual: ID {id}, Type {step.type}")
 
     def capture_auto(self, code_snippet: str, context: str):
-        """
-        Captures an automatic development step based on code and context.
+        """Captura automática de un paso basado en código y contexto.
 
         Args:
-            code_snippet (str): The code snippet.
-            context (str): Context information.
+            code_snippet (str): Snippet de código.
+            context (str): Contexto de captura.
 
         Side effects:
-            - Adds document to vector DB if AUTO_CAPTURE is enabled.
+            - Añade a ChromaDB si AUTO_CAPTURE=True.
 
         Example:
             >>> capture_system.capture_auto("print('Hello')", "Test context")
         """
         if self.config.AUTO_CAPTURE:
-            # Lógica para inferir type, title, etc. usando LLM si es necesario
             step = DevelopmentStep(
                 id=str(uuid.uuid4()),
                 timestamp=datetime.now().isoformat(),
@@ -321,66 +325,61 @@ class CaptureSystem:
                 metadata={"context": context}
             )
             self.capture_manual(step)
+            logger.info(f"Capturado auto: ID {step.id}")
 
 class LLMQuerySystem:
-    """
-    Handles querying the LLM with context retrieved from the vector DB (RAG).
+    """Sistema para consultas RAG al LLM con contexto de la DB vectorial.
+
+    Args:
+        config (AIPHAConfig): Configuración.
+        db_manager (VectorDBManager): Manager de DB.
+
+    Side effects:
+        - Logs queries/responses.
+
+    Example:
+        >>> result = llm_query_system.query("Test query", "test")
+        >>> print(result)  # LLM response
     """
     def __init__(self, config: AIPHAConfig, db_manager: VectorDBManager):
-        """
-        Initializes the LLM Query System.
-
-        Args:
-            config (AIPHAConfig): Configuration object.
-            db_manager (VectorDBManager): Vector DB manager instance.
-
-        Side effects:
-            - Initializes OpenAI client.
-
-        Example:
-            >>> llm_system = LLMQuerySystem(config, db_manager)
-        """
         self.config = config
         self.db_manager = db_manager
-        if self.config.API_KEY:
-            self.client = openai.OpenAI(api_key=self.config.API_KEY)
-        else:
-            self.client = None
+        self.client = OpenAI(api_key=self.config.API_KEY)  # Usa nueva interfaz openai>=1.0
         logger.info("LLMQuerySystem inicializado.")
 
-    def query(self, user_query: str) -> str:
-        """
-        Queries the LLM with context retrieved from the vector DB.
+    def query(self, user_query: str, filter_type: Optional[str] = None, n_results: int = 5) -> str:
+        """Consulta el LLM con contexto recuperado de la DB (RAG).
 
         Args:
-            user_query (str): The user's query.
+            user_query (str): Consulta del usuario.
+            filter_type (Optional[str]): Filtrar por type (default: None).
+            n_results (int): Número de docs a recuperar (default: 5).
 
         Returns:
-            str: The LLM's response.
+            str: Respuesta del LLM.
 
         Side effects:
-            - Calls OpenAI API if API_KEY is set.
+            - Llama a API OpenAI.
 
         Example:
-            >>> response = llm_system.query("What is the test content?")
+            >>> llm_query_system.query("What is test?")
+            'Mock response'
         """
-        if not self.client:
-            return "LLM not configured (no API_KEY)."
-        # Recuperar contexto relevante
-        relevant_docs = self.db_manager.search(user_query, n_results=3)
-        context = "\n".join([doc['content'] for doc in relevant_docs])
+        retrieved_docs = self.db_manager.search(user_query, n_results, filter_type)
+        context = "\n".join([doc['content'] for doc in retrieved_docs])
 
-        # Construir prompt
-        prompt = f"Contexto:\n{context}\n\nPregunta: {user_query}\n\nRespuesta:"
+        prompt = f"Basado en el siguiente contexto: {context}\nResponde a la pregunta: {user_query}"
 
-        # Llamar a OpenAI
         response = self.client.chat.completions.create(
             model=self.config.LLM_MODEL,
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=500,
-            temperature=0.7
+            messages=[
+                {"role": "system", "content": "Eres un asistente útil."},
+                {"role": "user", "content": prompt}
+            ]
         )
-        return response.choices[0].message.content.strip()
+        result = response.choices[0].message.content
+        logger.info(f"LLM Query: {user_query} -> Response length: {len(result)}")
+        return result
            
 
 if __name__ == "__main__":
