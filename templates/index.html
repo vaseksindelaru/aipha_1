@@ -176,6 +176,65 @@
             margin-bottom: 10px;
             color: #667eea;
         }
+
+        .voice-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .voice-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .voice-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .voice-btn.recording {
+            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+            animation: pulse 1.5s infinite;
+        }
+
+        .voice-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        @keyframes pulse {
+            0% { transform: translateY(-2px) scale(1); }
+            50% { transform: translateY(-2px) scale(1.05); }
+            100% { transform: translateY(-2px) scale(1); }
+        }
+
+        .voice-status {
+            font-size: 14px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .voice-status.listening {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .voice-status.error {
+            color: #dc3545;
+        }
     </style>
 </head>
 <body>
@@ -183,6 +242,14 @@
         <div class="logo">🧠</div>
         <h1>AiphaLab</h1>
         <p class="subtitle">Sistema de Consultas Inteligente con LLMs</p>
+
+        <div class="voice-controls">
+            <button type="button" id="voiceBtn" class="voice-btn">
+                <span id="voiceIcon">🎤</span>
+                <span id="voiceText">Dictar Pregunta</span>
+            </button>
+            <div id="voiceStatus" class="voice-status">Haz clic para comenzar a dictar</div>
+        </div>
 
         <form id="queryForm">
             <div class="form-group">
@@ -218,6 +285,131 @@
     </div>
 
     <script>
+        // Variables para reconocimiento de voz
+        let recognition = null;
+        let isListening = false;
+        const questionTextarea = document.getElementById('question');
+        const voiceBtn = document.getElementById('voiceBtn');
+        const voiceIcon = document.getElementById('voiceIcon');
+        const voiceText = document.getElementById('voiceText');
+        const voiceStatus = document.getElementById('voiceStatus');
+
+        // Inicializar reconocimiento de voz
+        function initSpeechRecognition() {
+            // Verificar soporte del navegador
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+            if (!SpeechRecognition) {
+                voiceStatus.textContent = 'Reconocimiento de voz no soportado en este navegador';
+                voiceStatus.className = 'voice-status error';
+                voiceBtn.disabled = true;
+                return false;
+            }
+
+            recognition = new SpeechRecognition();
+            recognition.lang = 'es-ES'; // Español
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            recognition.onstart = function() {
+                isListening = true;
+                voiceBtn.classList.add('recording');
+                voiceIcon.textContent = '🔴';
+                voiceText.textContent = 'Escuchando...';
+                voiceStatus.textContent = 'Habla ahora. Di tu pregunta...';
+                voiceStatus.className = 'voice-status listening';
+            };
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                const currentText = questionTextarea.value.trim();
+
+                // Agregar el texto reconocido
+                if (currentText) {
+                    questionTextarea.value = currentText + ' ' + transcript;
+                } else {
+                    questionTextarea.value = transcript;
+                }
+
+                voiceStatus.textContent = `Texto reconocido: "${transcript}"`;
+                stopListening();
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Error de reconocimiento de voz:', event.error);
+                let errorMessage = 'Error de reconocimiento de voz';
+
+                switch(event.error) {
+                    case 'no-speech':
+                        errorMessage = 'No se detectó habla. Inténtalo de nuevo.';
+                        break;
+                    case 'audio-capture':
+                        errorMessage = 'Error al capturar audio. Verifica tu micrófono.';
+                        break;
+                    case 'not-allowed':
+                        errorMessage = 'Acceso al micrófono denegado. Permite el acceso e intenta de nuevo.';
+                        break;
+                    case 'network':
+                        errorMessage = 'Error de red. Verifica tu conexión.';
+                        break;
+                    default:
+                        errorMessage = `Error: ${event.error}`;
+                }
+
+                voiceStatus.textContent = errorMessage;
+                voiceStatus.className = 'voice-status error';
+                stopListening();
+            };
+
+            recognition.onend = function() {
+                stopListening();
+            };
+
+            return true;
+        }
+
+        function startListening() {
+            if (!recognition) {
+                if (!initSpeechRecognition()) return;
+            }
+
+            try {
+                recognition.start();
+            } catch (error) {
+                console.error('Error al iniciar reconocimiento:', error);
+                voiceStatus.textContent = 'Error al iniciar reconocimiento de voz';
+                voiceStatus.className = 'voice-status error';
+            }
+        }
+
+        function stopListening() {
+            isListening = false;
+            voiceBtn.classList.remove('recording');
+            voiceIcon.textContent = '🎤';
+            voiceText.textContent = 'Dictar Pregunta';
+
+            if (!voiceStatus.classList.contains('error')) {
+                voiceStatus.textContent = 'Haz clic para comenzar a dictar';
+                voiceStatus.className = 'voice-status';
+            }
+        }
+
+        // Event listener para el botón de voz
+        voiceBtn.addEventListener('click', function() {
+            if (isListening) {
+                recognition.stop();
+            } else {
+                startListening();
+            }
+        });
+
+        // Inicializar reconocimiento de voz cuando se carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            initSpeechRecognition();
+        });
+
+        // Event listener para el formulario
         document.getElementById('queryForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
