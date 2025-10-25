@@ -158,23 +158,12 @@ class AiphaShadow:
         context_parts = []
         context_parts.append("=== CONTEXTO COMPLETO DE TODOS LOS PROYECTOS AIPHA ===")
 
-        # Repositorios de Aipha en GitHub - URLs corregidas para acceso real
-        # NOTA: Los repositorios deben existir en GitHub para que Gemini tenga acceso real
+        # Repositorios de Aipha en GitHub - URLs corregidas según los links proporcionados por el usuario
         aipha_repos = [
-            ('Aipha_0.0.1', 'https://api.github.com/repos/vaclav/Aipha_0.0.1/contents'),
-            ('Aipha_0.2.1', 'https://api.github.com/repos/vaclav/Aipha_0.2.1/contents'),
-            ('Aipha_0.3.1', 'https://api.github.com/repos/vaclav/Aipha_0.3.1/contents'),
-            ('Aipha_1.0', 'https://api.github.com/repos/vaclav/Aipha_1.0/contents'),  # Proyecto actual con AiphaLab
-            ('Aipha_1.1', 'https://api.github.com/repos/vaclav/Aipha_1.1/contents')
-        ]
-
-        # Intentar también con diferentes nombres de usuario si los repositorios existen
-        alternative_repos = [
-            ('Aipha_0.0.1', 'https://api.github.com/repos/Aipha/Aipha_0.0.1/contents'),
-            ('Aipha_0.2.1', 'https://api.github.com/repos/Aipha/Aipha_0.2.1/contents'),
-            ('Aipha_0.3.1', 'https://api.github.com/repos/Aipha/Aipha_0.3.1/contents'),
-            ('Aipha_1.0', 'https://api.github.com/repos/Aipha/Aipha_1.0/contents'),
-            ('Aipha_1.1', 'https://api.github.com/repos/Aipha/Aipha_1.1/contents')
+            ('Aipha_0.0.1', 'https://api.github.com/repos/vaseksindelaru/aipha_0.0.1/contents'),
+            ('Aipha_0.2', 'https://api.github.com/repos/vaseksindelaru/aipha_0.2/contents'),
+            ('Aipha_0.3.1', 'https://api.github.com/repos/vaseksindelaru/aipha_0.3.1/contents'),
+            ('Aipha_1', 'https://api.github.com/repos/vaseksindelaru/aipha_1/contents')
         ]
 
         # Para desarrollo/testing: simular contenido de repositorios inexistentes
@@ -187,7 +176,7 @@ class AiphaShadow:
             context_parts.append(f"\n=== PROYECTO LOCAL ACTUAL ({current_project_path.name}) ===")
             self._add_local_project_context(context_parts, current_project_path)
 
-        # Cargar contexto de cada repositorio de GitHub - intentar múltiples URLs
+        # Cargar contexto de cada repositorio de GitHub
         for repo_name, api_url in aipha_repos:
             repo_loaded = False
             try:
@@ -195,33 +184,17 @@ class AiphaShadow:
                 self._add_github_repo_context(context_parts, repo_name, api_url)
                 repo_loaded = True
             except Exception as e:
-                # Intentar con URL alternativa
-                alt_repo = next((alt for alt in alternative_repos if alt[0] == repo_name), None)
-                if alt_repo:
-                    try:
-                        context_parts.append(f"\n--- Intentando URL alternativa para {repo_name} ---")
-                        self._add_github_repo_context(context_parts, repo_name, alt_repo[1])
-                        repo_loaded = True
-                    except Exception as e2:
-                        # Usar contenido simulado para desarrollo/testing
-                        context_parts.append(f"\n--- CONTENIDO SIMULADO PARA {repo_name} (repositorio no encontrado en GitHub) ---")
-                        simulated_data = simulated_content.get(repo_name, {})
-                        if simulated_data:
-                            context_parts.append(f"--- ARCHIVOS SIMULADOS EN {repo_name}: {len(simulated_data)} ---")
-                            for file_path, content in simulated_data.items():
-                                context_parts.append(f"\n--- {file_path} ---\n{content}")
-                            context_parts.append(f"\n--- NOTA: Este es contenido SIMULADO para testing. Para contenido real, crea el repositorio {repo_name} en GitHub ---")
-                            repo_loaded = True
-                        else:
-                            context_parts.append(f"\n--- Error cargando {repo_name} (ambas URLs fallaron): {e} / {e2} ---")
+                # Usar contenido simulado si falla el acceso a GitHub
+                context_parts.append(f"\n--- CONTENIDO SIMULADO PARA {repo_name} (error de acceso a GitHub: {e}) ---")
+                simulated_data = simulated_content.get(repo_name, {})
+                if simulated_data:
+                    context_parts.append(f"--- ARCHIVOS SIMULADOS EN {repo_name}: {len(simulated_data)} ---")
+                    for file_path, content in simulated_data.items():
+                        context_parts.append(f"\n--- {file_path} ---\n{content}")
+                    context_parts.append(f"\n--- NOTA: Contenido simulado disponible. Error de GitHub: {e} ---")
+                    repo_loaded = True
                 else:
                     context_parts.append(f"\n--- Error cargando {repo_name}: {e} ---")
-
-            if not repo_loaded:
-                # Si no se pudo cargar ni simular, agregar información de que el repo no existe
-                context_parts.append(f"\n--- REPOSITORIO {repo_name} NO ENCONTRADO ---")
-                context_parts.append("Este repositorio no existe en GitHub o no es accesible.")
-                context_parts.append("Para que Gemini tenga acceso real al código, el repositorio debe existir en GitHub.")
 
         context_parts.append("\n=== FIN CONTEXTO COMPLETO AIPHA ===")
 
@@ -491,6 +464,281 @@ python main.py
 ```
 
 El sistema analizará el mercado continuamente en busca de oportunidades de trading.'''
+            },
+            'Aipha_0.2': {
+                'main.py': '''"""
+Aipha 0.2 - Sistema de Trading Avanzado
+Versión con integración completa de componentes
+"""
+
+import time
+import logging
+import numpy as np
+from aipha.oracles.oracle_engine import OracleEngine
+from aipha.strategies.strategy_manager import StrategyManager
+from aipha.risk.risk_manager import RiskManager
+
+def main():
+    """Función principal del sistema Aipha 0.2"""
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    logger.info("Iniciando Aipha 0.2 - Sistema Avanzado")
+
+    # Inicializar componentes principales
+    oracle = OracleEngine()
+    strategy_manager = StrategyManager()
+    risk_manager = RiskManager()
+
+    # Bucle principal avanzado
+    while True:
+        try:
+            # Obtener señales del oráculo
+            market_signals = oracle.get_market_signals()
+
+            # Evaluar estrategias disponibles
+            active_strategies = strategy_manager.evaluate_strategies(market_signals)
+
+            for strategy in active_strategies:
+                # Verificar límites de riesgo
+                if risk_manager.check_strategy_risk(strategy):
+                    logger.info(f"Ejecutando estrategia: {strategy.name}")
+                    # Ejecutar estrategia
+                    strategy_manager.execute_strategy(strategy)
+
+            # Esperar antes del siguiente ciclo
+            time.sleep(15)  # 15 segundos
+
+        except KeyboardInterrupt:
+            logger.info("Sistema detenido por usuario")
+            break
+        except Exception as e:
+            logger.error(f"Error en bucle principal: {e}")
+            time.sleep(10)
+
+if __name__ == "__main__":
+    main()''',
+                'aipha/oracles/oracle_engine.py': '''"""
+Oracle Engine - Aipha 0.2
+Motor de predicción avanzado que combina múltiples fuentes de datos
+"""
+
+import numpy as np
+import pandas as pd
+from typing import Dict, List, Any
+import logging
+
+class OracleEngine:
+    def __init__(self):
+        self.data_sources = []
+        self.prediction_models = []
+        self.confidence_threshold = 0.75
+
+    def add_data_source(self, source):
+        """Agregar una fuente de datos"""
+        self.data_sources.append(source)
+
+    def add_prediction_model(self, model):
+        """Agregar un modelo de predicción"""
+        self.prediction_models.append(model)
+
+    def get_market_signals(self) -> Dict[str, Any]:
+        """Obtener señales del mercado combinando todas las fuentes"""
+        combined_signals = {}
+
+        # Recopilar datos de todas las fuentes
+        for source in self.data_sources:
+            source_data = source.get_data()
+            combined_signals.update(source_data)
+
+        # Generar predicciones usando todos los modelos
+        predictions = []
+        for model in self.prediction_models:
+            prediction = model.predict(combined_signals)
+            if prediction['confidence'] > self.confidence_threshold:
+                predictions.append(prediction)
+
+        return {
+            'market_data': combined_signals,
+            'predictions': predictions,
+            'timestamp': pd.Timestamp.now(),
+            'confidence_score': np.mean([p['confidence'] for p in predictions]) if predictions else 0
+        }
+
+    def validate_signal(self, signal: Dict[str, Any]) -> bool:
+        """Validar la calidad de una señal"""
+        # Lógica de validación de señales
+        if signal.get('confidence_score', 0) > self.confidence_threshold:
+            return True
+        return False
+
+    def get_signal_strength(self, signal: Dict[str, Any]) -> float:
+        """Calcular la fuerza de una señal"""
+        confidence = signal.get('confidence_score', 0)
+        volume = signal.get('volume', 1)
+        momentum = signal.get('momentum', 0)
+
+        # Fórmula de fuerza de señal
+        strength = (confidence * 0.5) + (volume * 0.3) + (momentum * 0.2)
+        return min(strength, 1.0)''',
+                'aipha/strategies/strategy_manager.py': '''"""
+Strategy Manager - Aipha 0.2
+Gestor de estrategias de trading
+"""
+
+from typing import List, Dict, Any
+import logging
+
+class StrategyManager:
+    def __init__(self):
+        self.strategies = []
+        self.active_strategies = []
+
+    def add_strategy(self, strategy):
+        """Agregar una estrategia"""
+        self.strategies.append(strategy)
+
+    def evaluate_strategies(self, market_signals: Dict[str, Any]) -> List:
+        """Evaluar qué estrategias activar basado en señales del mercado"""
+        active = []
+
+        for strategy in self.strategies:
+            if strategy.should_activate(market_signals):
+                active.append(strategy)
+
+        self.active_strategies = active
+        return active
+
+    def execute_strategy(self, strategy):
+        """Ejecutar una estrategia específica"""
+        try:
+            result = strategy.execute()
+            logging.info(f"Estrategia {strategy.name} ejecutada: {result}")
+            return result
+        except Exception as e:
+            logging.error(f"Error ejecutando estrategia {strategy.name}: {e}")
+            return None
+
+    def get_strategy_performance(self) -> Dict[str, Any]:
+        """Obtener métricas de performance de estrategias"""
+        performance = {}
+
+        for strategy in self.strategies:
+            perf = strategy.get_performance_metrics()
+            performance[strategy.name] = perf
+
+        return performance''',
+                'aipha/risk/risk_manager.py': '''"""
+Risk Manager - Aipha 0.2
+Sistema avanzado de gestión de riesgos
+"""
+
+import logging
+from typing import Dict, Any
+
+class RiskManager:
+    def __init__(self):
+        self.max_drawdown = 0.15  # 15% máximo drawdown
+        self.max_position_size = 0.05  # 5% del portfolio máximo
+        self.daily_loss_limit = 0.08  # 8% pérdida diaria máxima
+        self.var_limit = 0.10  # 10% Value at Risk máximo
+
+    def check_strategy_risk(self, strategy) -> bool:
+        """Verificar si una estrategia cumple con los límites de riesgo"""
+        try:
+            # Verificar drawdown
+            current_drawdown = self._calculate_current_drawdown()
+            if current_drawdown > self.max_drawdown:
+                logging.warning(f"Drawdown límite excedido: {current_drawdown}")
+                return False
+
+            # Verificar tamaño de posición
+            position_size = strategy.get_position_size()
+            if position_size > self.max_position_size:
+                logging.warning(f"Tamaño de posición excedido: {position_size}")
+                return False
+
+            # Verificar pérdida diaria
+            daily_loss = self._calculate_daily_loss()
+            if daily_loss > self.daily_loss_limit:
+                logging.warning(f"Pérdida diaria límite excedida: {daily_loss}")
+                return False
+
+            return True
+
+        except Exception as e:
+            logging.error(f"Error verificando riesgo: {e}")
+            return False
+
+    def _calculate_current_drawdown(self) -> float:
+        """Calcular drawdown actual"""
+        # Lógica de cálculo de drawdown
+        return 0.05  # Simulado
+
+    def _calculate_daily_loss(self) -> float:
+        """Calcular pérdida diaria"""
+        # Lógica de cálculo de pérdida diaria
+        return 0.03  # Simulado
+
+    def get_risk_metrics(self) -> Dict[str, Any]:
+        """Obtener métricas de riesgo actuales"""
+        return {
+            'current_drawdown': self._calculate_current_drawdown(),
+            'daily_loss': self._calculate_daily_loss(),
+            'portfolio_var': 0.07,
+            'max_drawdown_limit': self.max_drawdown,
+            'daily_loss_limit': self.daily_loss_limit
+        }''',
+                'README.md': '''# Aipha 0.2
+
+Sistema de Trading Avanzado con Oráculos Inteligentes
+
+## Arquitectura Principal
+
+### Oracle Engine (`aipha/oracles/oracle_engine.py`)
+- **Motor de predicción avanzado** que combina múltiples fuentes de datos
+- **Integración de modelos de ML** para predicciones de mercado
+- **Sistema de confianza** para validar señales
+- **Cálculo de fuerza de señal** basado en múltiples factores
+
+### Strategy Manager (`aipha/strategies/strategy_manager.py`)
+- **Gestión inteligente de estrategias** de trading
+- **Evaluación automática** de condiciones de activación
+- **Ejecución coordinada** de múltiples estrategias
+- **Métricas de performance** por estrategia
+
+### Risk Manager (`aipha/risk/risk_manager.py`)
+- **Control avanzado de riesgos** con múltiples límites
+- **Monitoreo de drawdown** en tiempo real
+- **Gestión de tamaño de posición** dinámica
+- **Límites de pérdida diaria** configurables
+
+## Características Clave
+
+- **Oráculos Inteligentes**: Sistema de predicción multi-modelo
+- **Gestión de Estrategias**: Framework extensible para estrategias
+- **Control de Riesgos**: Múltiples capas de protección
+- **Arquitectura Modular**: Componentes desacoplados y reutilizables
+
+## Instalación
+
+```bash
+pip install -r requirements.txt
+python main.py
+```
+
+## Configuración
+
+El sistema se configura automáticamente con límites de riesgo conservadores.
+Para personalizar, modifica las constantes en cada módulo.''',
+                'requirements.txt': '''numpy>=1.21.0
+pandas>=1.3.0
+scikit-learn>=1.0.0
+tensorflow>=2.8.0
+matplotlib>=3.5.0
+seaborn>=0.11.0
+jupyter>=1.0.0
+ipykernel>=6.0.0'''
             },
             'Aipha_0.2.1': {
                 'main.py': '''"""
