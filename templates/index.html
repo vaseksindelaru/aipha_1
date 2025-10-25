@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AiphaLab - Consultas LLM</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            resize: vertical;
+            min-height: 120px;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .response-container {
+            margin-top: 30px;
+            text-align: left;
+            display: none;
+        }
+
+        .response-header {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .response-content {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e1e5e9;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .success {
+            color: #155724;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .logo {
+            font-size: 3em;
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🧠</div>
+        <h1>AiphaLab</h1>
+        <p class="subtitle">Sistema de Consultas Inteligente con LLMs</p>
+
+        <form id="queryForm">
+            <div class="form-group">
+                <label for="question">Tu Pregunta:</label>
+                <textarea
+                    id="question"
+                    name="question"
+                    placeholder="Escribe tu pregunta aquí... Ej: ¿Qué es Aipha? ¿Cómo funciona el sistema?"
+                    required
+                ></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="llm">Modelo de Lenguaje:</label>
+                <select id="llm" name="llm">
+                    {% for llm in available_llms %}
+                    <option value="{{ llm }}" {% if llm == default_llm %}selected{% endif %}>
+                        {{ llm.title() }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button type="submit" id="submitBtn">
+                <span id="btnText">Enviar Consulta</span>
+            </button>
+        </form>
+
+        <div id="responseContainer" class="response-container">
+            <div id="responseHeader" class="response-header"></div>
+            <div id="responseContent" class="response-content"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('queryForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            const responseContainer = document.getElementById('responseContainer');
+            const responseHeader = document.getElementById('responseHeader');
+            const responseContent = document.getElementById('responseContent');
+
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            btnText.innerHTML = '<div class="loading"></div>Procesando...';
+
+            // Clear previous responses
+            responseContainer.style.display = 'none';
+            responseHeader.className = 'response-header';
+            responseContent.className = 'response-content';
+
+            try {
+                const formData = new FormData(this);
+                const response = await fetch('/query', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    responseHeader.innerHTML = `<strong>Respuesta del modelo ${data.llm.toUpperCase()}:</strong>`;
+                    responseContent.textContent = data.response;
+                    responseContainer.style.display = 'block';
+                } else {
+                    responseHeader.innerHTML = '<strong>Error:</strong>';
+                    responseHeader.className = 'response-header error';
+                    responseContent.textContent = data.error;
+                    responseContainer.style.display = 'block';
+                }
+            } catch (error) {
+                responseHeader.innerHTML = '<strong>Error de conexión:</strong>';
+                responseHeader.className = 'response-header error';
+                responseContent.textContent = 'No se pudo conectar con el servidor. Verifica tu conexión.';
+                responseContainer.style.display = 'block';
+            } finally {
+                // Re-enable button
+                submitBtn.disabled = false;
+                btnText.textContent = 'Enviar Consulta';
+            }
+        });
+    </script>
+</body>
+</html>

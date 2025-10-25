@@ -126,8 +126,13 @@ class AiphaShadow:
             n_results=n_results
         )
 
-        # Preparar contexto
+        # Preparar contexto base
         context = "\n---\n".join([doc for doc in results['documents'][0]])
+
+        # AGREGAR CONTEXTO DE AIPHA_0.0.1 DIRECTAMENTE
+        aipha_context = self._load_aipha_context()
+        if aipha_context:
+            context = f"{aipha_context}\n\n--- CONTEXTO DE BASE DE CONOCIMIENTO ---\n{context}"
 
         # Consultar con el LLM elegido
         if llm == "openai":
@@ -138,6 +143,46 @@ class AiphaShadow:
             return self._query_claude(context, question)
         else:
             raise ValueError(f"LLM {llm} no soportado")
+
+    def _load_aipha_context(self) -> str:
+        """Carga el contexto de Aipha_0.0.1 directamente para incluir en consultas"""
+        aipha_path = Path("/home/vaclav/Aipha_0.0.1")
+        if not aipha_path.exists():
+            return ""
+
+        context_parts = []
+        context_parts.append("=== CONTEXTO DE AIPHA 0.0.1 ===")
+
+        # Archivos principales
+        main_files = ['potential_capture_engine.py', 'main.py', 'shadow.py']
+
+        for file_name in main_files:
+            file_path = aipha_path / file_name
+            if file_path.exists():
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                    # Limitar tamaño para evitar prompts demasiado largos
+                    if len(content) > 2000:
+                        content = content[:2000] + "\n... [contenido truncado]"
+                    context_parts.append(f"\n--- {file_name} ---\n{content}")
+                except Exception as e:
+                    context_parts.append(f"\n--- {file_name} ---\n[Error cargando archivo: {e}]")
+
+        # Agregar información del repositorio
+        try:
+            import subprocess
+            result = subprocess.run(['git', 'log', '--oneline', '-1'],
+                                  cwd=str(aipha_path),
+                                  capture_output=True, text=True, timeout=5)
+            if result.returncode == 0:
+                context_parts.append(f"\n--- ÚLTIMO COMMIT ---\n{result.stdout.strip()}")
+        except:
+            pass
+
+        context_parts.append("\n=== FIN CONTEXTO AIPHA 0.0.1 ===")
+
+        return "\n".join(context_parts)
     
     def _query_openai(self, context: str, question: str) -> str:
         """Consulta con OpenAI"""
