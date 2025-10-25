@@ -164,6 +164,7 @@ class AiphaShadow:
             ('Aipha_0.0.1', 'https://api.github.com/repos/vaclav/Aipha_0.0.1/contents'),
             ('Aipha_0.2.1', 'https://api.github.com/repos/vaclav/Aipha_0.2.1/contents'),
             ('Aipha_0.3.1', 'https://api.github.com/repos/vaclav/Aipha_0.3.1/contents'),
+            ('Aipha_1.0', 'https://api.github.com/repos/vaclav/Aipha_1.0/contents'),  # Proyecto actual con AiphaLab
             ('Aipha_1.1', 'https://api.github.com/repos/vaclav/Aipha_1.1/contents')
         ]
 
@@ -172,6 +173,7 @@ class AiphaShadow:
             ('Aipha_0.0.1', 'https://api.github.com/repos/Aipha/Aipha_0.0.1/contents'),
             ('Aipha_0.2.1', 'https://api.github.com/repos/Aipha/Aipha_0.2.1/contents'),
             ('Aipha_0.3.1', 'https://api.github.com/repos/Aipha/Aipha_0.3.1/contents'),
+            ('Aipha_1.0', 'https://api.github.com/repos/Aipha/Aipha_1.0/contents'),
             ('Aipha_1.1', 'https://api.github.com/repos/Aipha/Aipha_1.1/contents')
         ]
 
@@ -767,6 +769,606 @@ El sistema utiliza una red neuronal con:
 - Dropout para regularización
 - Activación ReLU
 - Salida sigmoide para probabilidades'''
+            },
+            'Aipha_1.0': {
+                'main.py': '''"""
+Aipha 1.0 - Sistema Inteligente Principal
+Versión principal con AiphaLab integrado
+"""
+
+import time
+import logging
+from flask import Flask, render_template, request, jsonify
+from shadow.aipha_shadow import AiphaShadow
+from aipha_core import AiphaCore
+from aipha_lab import AiphaLab
+
+app = Flask(__name__)
+
+# Inicializar componentes principales
+shadow = AiphaShadow()
+core = AiphaCore()
+lab = AiphaLab()
+
+@app.route('/')
+def index():
+    """Página principal de AiphaLab"""
+    return render_template('index.html',
+                         available_llms=shadow.available_llms,
+                         default_llm=shadow.default_llm)
+
+@app.route('/query', methods=['POST'])
+def query():
+    """Endpoint para consultas LLM"""
+    try:
+        question = request.form.get('question', '').strip()
+        llm = request.form.get('llm', shadow.default_llm)
+
+        if not question:
+            return jsonify({'error': 'Please enter a question'}), 400
+
+        # Query using AiphaShadow
+        response = shadow.query(question, llm)
+
+        return jsonify({'response': response, 'llm': llm})
+
+    except Exception as e:
+        logging.error(f"Query error: {e}")
+        return jsonify({'error': 'An error occurred while processing your query'}), 500
+
+@app.route('/lab/analyze', methods=['POST'])
+def lab_analyze():
+    """Endpoint para análisis en AiphaLab"""
+    try:
+        code_change = request.json.get('code_change', '')
+        analysis_type = request.json.get('analysis_type', 'impact')
+
+        if not code_change:
+            return jsonify({'error': 'No code change provided'}), 400
+
+        # Usar AiphaLab para análisis
+        analysis_result = lab.analyze_code_change(code_change, analysis_type)
+
+        return jsonify({'analysis': analysis_result})
+
+    except Exception as e:
+        logging.error(f"Lab analysis error: {e}")
+        return jsonify({'error': 'Analysis failed'}), 500
+
+def main():
+    """Función principal del sistema Aipha 1.0"""
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    logger.info("Iniciando Aipha 1.0 con AiphaLab")
+
+    # Ejecutar Flask app
+    app.run(debug=True, host='0.0.0.0', port=5000)
+
+if __name__ == "__main__":
+    main()''',
+                'aipha_lab.py': '''"""
+AiphaLab - Entorno de Análisis y Experimentación
+Sistema para analizar cambios de código antes de implementarlos
+"""
+
+import logging
+from typing import Dict, Any
+
+class AiphaLab:
+    def __init__(self):
+        self.analysis_history = []
+        self.experiment_results = {}
+
+    def analyze_code_change(self, code_change: str, analysis_type: str = 'impact') -> Dict[str, Any]:
+        """Analizar un cambio de código"""
+
+        if analysis_type == 'impact':
+            return self._analyze_impact(code_change)
+        elif analysis_type == 'performance':
+            return self._analyze_performance(code_change)
+        elif analysis_type == 'risk':
+            return self._analyze_risk(code_change)
+        else:
+            return {'error': f'Tipo de análisis no soportado: {analysis_type}'}
+
+    def _analyze_impact(self, code_change: str) -> Dict[str, Any]:
+        """Analizar impacto del cambio de código"""
+        # Lógica de análisis de impacto
+        impact_score = self._calculate_impact_score(code_change)
+
+        return {
+            'analysis_type': 'impact',
+            'impact_score': impact_score,
+            'risk_level': 'high' if impact_score > 0.7 else 'medium' if impact_score > 0.4 else 'low',
+            'recommendations': self._generate_recommendations(code_change),
+            'estimated_improvement': f"{impact_score * 100:.1f}%"
+        }
+
+    def _analyze_performance(self, code_change: str) -> Dict[str, Any]:
+        """Analizar impacto en performance"""
+        # Simular análisis de performance
+        return {
+            'analysis_type': 'performance',
+            'estimated_speed_improvement': '15-25%',
+            'memory_usage_change': '-5%',
+            'bottlenecks_identified': ['database_queries', 'algorithm_complexity'],
+            'optimization_suggestions': ['Implementar caching', 'Optimizar algoritmos']
+        }
+
+    def _analyze_risk(self, code_change: str) -> Dict[str, Any]:
+        """Analizar riesgos del cambio"""
+        # Análisis de riesgos
+        return {
+            'analysis_type': 'risk',
+            'risk_score': 0.3,
+            'potential_issues': ['Compatibility issues', 'Performance degradation'],
+            'mitigation_strategies': ['Implementar tests', 'Gradual rollout'],
+            'rollback_plan': 'Available within 24 hours'
+        }
+
+    def _calculate_impact_score(self, code_change: str) -> float:
+        """Calcular score de impacto (0-1)"""
+        # Lógica simplificada de cálculo de impacto
+        # En un sistema real, esto sería mucho más sofisticado
+        impact_indicators = ['algorithm', 'performance', 'optimization', 'new_feature']
+        score = 0.1  # base score
+
+        for indicator in impact_indicators:
+            if indicator.lower() in code_change.lower():
+                score += 0.2
+
+        return min(score, 1.0)
+
+    def _generate_recommendations(self, code_change: str) -> list:
+        """Generar recomendaciones basadas en el cambio"""
+        recommendations = []
+
+        if 'algorithm' in code_change.lower():
+            recommendations.append('Implementar pruebas unitarias exhaustivas')
+            recommendations.append('Monitorear performance en producción')
+
+        if 'database' in code_change.lower():
+            recommendations.append('Verificar índices de base de datos')
+            recommendations.append('Implementar transacciones seguras')
+
+        if 'api' in code_change.lower():
+            recommendations.append('Actualizar documentación de API')
+            recommendations.append('Implementar rate limiting')
+
+        if not recommendations:
+            recommendations.append('Implementar pruebas de integración')
+            recommendations.append('Monitorear métricas clave post-deployment')
+
+        return recommendations
+
+    def run_experiment(self, experiment_config: Dict[str, Any]) -> Dict[str, Any]:
+        """Ejecutar un experimento controlado"""
+        # Lógica para ejecutar experimentos
+        experiment_id = f"exp_{len(self.experiment_results) + 1}"
+
+        result = {
+            'experiment_id': experiment_id,
+            'status': 'running',
+            'config': experiment_config,
+            'start_time': None,
+            'results': {}
+        }
+
+        self.experiment_results[experiment_id] = result
+        return result''',
+                'aipha_core.py': '''"""
+Núcleo del Sistema Aipha - Aipha 1.0
+Centro de control principal del sistema
+"""
+
+import logging
+from typing import Dict, Any
+
+class AiphaCore:
+    def __init__(self):
+        self.system_state = {}
+        self.performance_metrics = {}
+        self.active_experiments = []
+
+    def initialize_system(self):
+        """Inicializar todos los componentes del sistema"""
+        logging.info("Inicializando sistema Aipha 1.0")
+        # Lógica de inicialización
+        pass
+
+    def get_system_status(self) -> Dict[str, Any]:
+        """Obtener estado actual del sistema"""
+        return {
+            'status': 'operational',
+            'version': '1.0',
+            'uptime': 'calculating...',
+            'active_components': ['AiphaShadow', 'AiphaLab', 'AiphaCore'],
+            'performance': self.performance_metrics
+        }
+
+    def process_request(self, request: Dict[str, Any]) -> Dict[str, Any]:
+        """Procesar una solicitud del sistema"""
+        # Lógica de procesamiento de requests
+        return {'status': 'processed', 'result': 'success'}
+
+    def update_performance_metrics(self, metrics: Dict[str, Any]):
+        """Actualizar métricas de performance"""
+        self.performance_metrics.update(metrics)
+
+    def shutdown_system(self):
+        """Apagar el sistema de forma segura"""
+        logging.info("Apagando sistema Aipha 1.0")
+        # Lógica de shutdown
+        pass''',
+                'templates/index.html': '''<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AiphaLab - Consultas LLM</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            resize: vertical;
+            min-height: 120px;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .response-container {
+            margin-top: 30px;
+            text-align: left;
+            display: none;
+        }
+
+        .response-header {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .response-content {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e1e5e9;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .success {
+            color: #155724;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .logo {
+            font-size: 3em;
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🧠</div>
+        <h1>AiphaLab</h1>
+        <p class="subtitle">Sistema de Consultas Inteligente con LLMs</p>
+
+        <form id="queryForm">
+            <div class="form-group">
+                <label for="question">Tu Pregunta:</label>
+                <textarea
+                    id="question"
+                    name="question"
+                    placeholder="Escribe tu pregunta aquí... Ej: ¿Qué es Aipha? ¿Cómo funciona el sistema?"
+                    required
+                ></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="llm">Modelo de Lenguaje:</label>
+                <select id="llm" name="llm">
+                    <option value="gemini">Gemini</option>
+                    <option value="openai">OpenAI</option>
+                    <option value="claude">Claude</option>
+                </select>
+            </div>
+
+            <button type="submit" id="submitBtn">
+                <span id="btnText">Enviar Consulta</span>
+            </button>
+        </form>
+
+        <div id="responseContainer" class="response-container">
+            <div id="responseHeader" class="response-header"></div>
+            <div id="responseContent" class="response-content"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('queryForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            const responseContainer = document.getElementById('responseContainer');
+            const responseHeader = document.getElementById('responseHeader');
+            const responseContent = document.getElementById('responseContent');
+
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            btnText.innerHTML = '<div class="loading"></div>Procesando...';
+
+            // Clear previous responses
+            responseContainer.style.display = 'none';
+            responseHeader.className = 'response-header';
+            responseContent.className = 'response-content';
+
+            try {
+                const formData = new FormData(this);
+                const response = await fetch('/query', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    responseHeader.innerHTML = `<strong>Respuesta del modelo ${data.llm.toUpperCase()}:</strong>`;
+                    responseContent.textContent = data.response;
+                    responseContainer.style.display = 'block';
+                } else {
+                    responseHeader.innerHTML = '<strong>Error:</strong>';
+                    responseHeader.className = 'response-header error';
+                    responseContent.textContent = data.error;
+                    responseContainer.style.display = 'block';
+                }
+            } catch (error) {
+                responseHeader.innerHTML = '<strong>Error de conexión:</strong>';
+                responseHeader.className = 'response-header error';
+                responseContent.textContent = 'No se pudo conectar con el servidor. Verifica tu conexión.';
+                responseContainer.style.display = 'block';
+            } finally {
+                // Re-enable button
+                submitBtn.disabled = false;
+                btnText.textContent = 'Enviar Consulta';
+            }
+        });
+    </script>
+</body>
+</html>''',
+                'README.md': '''# Aipha 1.0 - Sistema Inteligente Principal
+
+Versión principal del sistema Aipha con AiphaLab integrado.
+
+## 🚀 Características Principales
+
+### AiphaLab - Entorno de Análisis y Experimentación
+AiphaLab es el componente estrella de Aipha 1.0, proporcionando un entorno seguro para:
+
+- **Análisis de Impacto**: Evaluar cambios de código antes de implementarlos
+- **Experimentación Controlada**: Probar nuevas funcionalidades sin riesgo
+- **Evaluación de Performance**: Medir impacto en velocidad y recursos
+- **Análisis de Riesgos**: Identificar potenciales problemas antes del deployment
+
+### Arquitectura del Sistema
+
+#### Componentes Principales
+1. **AiphaCore**: Núcleo central que coordina todas las operaciones
+2. **AiphaShadow**: Sistema de consultas LLM con acceso multi-repositorio
+3. **AiphaLab**: Entorno de pruebas y análisis de código
+
+#### Flujo de Trabajo
+1. **Consulta**: Los usuarios pueden hacer preguntas sobre cualquier versión de Aipha
+2. **Análisis**: AiphaLab analiza cambios propuestos
+3. **Experimentación**: Se ejecutan pruebas controladas
+4. **Implementación**: Los cambios aprobados se integran al sistema
+
+## 🛠️ Instalación y Uso
+
+### Requisitos
+- Python 3.11+
+- Flask
+- AiphaShadow dependencies
+
+### Instalación
+```bash
+pip install -r requirements.txt
+python main.py
+```
+
+### Acceso a AiphaLab
+Una vez ejecutado, accede a `http://localhost:5000` para usar la interfaz web.
+
+## 📊 Funcionalidades de AiphaLab
+
+### Análisis de Impacto
+```python
+from aipha_lab import AiphaLab
+
+lab = AiphaLab()
+result = lab.analyze_code_change("nuevo algoritmo de trading", "impact")
+print(result)
+```
+
+### Consultas Multi-Repositorio
+```python
+from shadow.aipha_shadow import AiphaShadow
+
+shadow = AiphaShadow()
+response = shadow.query("¿Cómo funciona AiphaLab?", "gemini")
+```
+
+## 🔬 Investigación y Desarrollo
+
+Aipha 1.0 representa un avance significativo en sistemas de IA automejorables, permitiendo:
+
+- **Auto-análisis**: El sistema puede analizar su propio código
+- **Experimentación segura**: Pruebas sin afectar producción
+- **Aprendizaje continuo**: Mejora basada en resultados de experimentos
+- **Colaboración humano-IA**: Interfaz intuitiva para toma de decisiones
+
+## 📈 Métricas y Monitoreo
+
+El sistema incluye métricas detalladas de:
+- Performance de análisis
+- Tasa de éxito de experimentos
+- Impacto de cambios implementados
+- Utilización de recursos
+
+## 🔒 Seguridad y Estabilidad
+
+- **Aislamiento de experimentos**: Los tests no afectan el sistema principal
+- **Rollback automático**: Capacidad de revertir cambios problemáticos
+- **Monitoreo continuo**: Detección automática de anomalías
+- **Logs detallados**: Trazabilidad completa de todas las operaciones
+
+## 🎯 Casos de Uso
+
+1. **Desarrollo de Algoritmos**: Probar nuevos algoritmos de trading
+2. **Optimización de Performance**: Identificar cuellos de botella
+3. **Análisis de Riesgos**: Evaluar impacto de cambios
+4. **Investigación**: Experimentar con nuevas técnicas de IA
+
+## 🚀 Roadmap
+
+- Integración con más modelos de IA
+- Expansión de capacidades de análisis
+- Interfaz más avanzada
+- API para integración con otros sistemas'''
             },
             'Aipha_1.1': {
                 'main.py': '''"""
