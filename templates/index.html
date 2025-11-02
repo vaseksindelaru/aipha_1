@@ -235,6 +235,117 @@
         .voice-status.error {
             color: #dc3545;
         }
+
+        .conversation-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .conv-btn {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .conv-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3);
+        }
+
+        .conv-btn.danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+
+        .conv-btn.danger:hover {
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+        }
+
+        .conversation-info {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #495057;
+            text-align: center;
+        }
+
+        .history-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .history-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .history-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6c757d;
+        }
+
+        .history-close:hover {
+            color: #495057;
+        }
+
+        .history-message {
+            margin-bottom: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .history-message.user {
+            border-left-color: #28a745;
+            background: #f8fff9;
+        }
+
+        .history-message.assistant {
+            border-left-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .history-timestamp {
+            font-size: 12px;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
     </style>
 </head>
 <body>
@@ -249,6 +360,19 @@
                 <span id="voiceText">Dictar Pregunta</span>
             </button>
             <div id="voiceStatus" class="voice-status">Haz clic para comenzar a dictar</div>
+        </div>
+
+        <div class="conversation-info">
+            <span id="conversationInfo">Conversación iniciada</span>
+        </div>
+
+        <div class="conversation-controls">
+            <button type="button" id="showHistoryBtn" class="conv-btn">
+                📜 Ver Historial
+            </button>
+            <button type="button" id="clearConversationBtn" class="conv-btn danger">
+                🗑️ Limpiar Conversación
+            </button>
         </div>
 
         <form id="queryForm">
@@ -281,6 +405,19 @@
         <div id="responseContainer" class="response-container">
             <div id="responseHeader" class="response-header"></div>
             <div id="responseContent" class="response-content"></div>
+        </div>
+    </div>
+
+    <!-- Modal para historial de conversación -->
+    <div id="historyModal" class="history-modal">
+        <div class="history-content">
+            <div class="history-header">
+                <h3>Historial de Conversación</h3>
+                <button class="history-close" onclick="closeHistoryModal()">&times;</button>
+            </div>
+            <div id="historyContent">
+                <!-- Contenido del historial se cargará aquí -->
+            </div>
         </div>
     </div>
 
@@ -409,6 +546,88 @@
             initSpeechRecognition();
         });
 
+        // Funciones de gestión de conversación
+        async function clearConversation() {
+            try {
+                const response = await fetch('/clear_conversation', {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+                
+                if (data.status === 'conversation_cleared') {
+                    document.getElementById('conversationInfo').textContent = 'Conversación limpiada - Nueva sesión iniciada';
+                    
+                    // Limpiar respuesta actual
+                    const responseContainer = document.getElementById('responseContainer');
+                    responseContainer.style.display = 'none';
+                    
+                    // Limpiar textarea
+                    document.getElementById('question').value = '';
+                }
+            } catch (error) {
+                console.error('Error limpiando conversación:', error);
+                alert('Error al limpiar la conversación');
+            }
+        }
+
+        async function showConversationHistory() {
+            try {
+                const response = await fetch('/get_conversation_history');
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    const historyContent = document.getElementById('historyContent');
+                    historyContent.innerHTML = '';
+
+                    if (data.history.length === 0) {
+                        historyContent.innerHTML = '<p>No hay historial de conversación disponible.</p>';
+                    } else {
+                        data.history.forEach((message, index) => {
+                            const messageDiv = document.createElement('div');
+                            const role = message.role === 'user' ? 'Usuario' : 'Shadow_1.0';
+                            const className = message.role === 'user' ? 'history-message user' : 'history-message assistant';
+                            
+                            let timestamp = '';
+                            if (message.timestamp) {
+                                const date = new Date(message.timestamp);
+                                timestamp = date.toLocaleString('es-ES');
+                            }
+                            
+                            messageDiv.className = className;
+                            messageDiv.innerHTML = `
+                                <div class="history-timestamp">${timestamp}</div>
+                                <strong>${role}:</strong> ${message.content}
+                            `;
+                            
+                            historyContent.appendChild(messageDiv);
+                        });
+                    }
+
+                    // Mostrar modal
+                    document.getElementById('historyModal').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error obteniendo historial:', error);
+                alert('Error al obtener el historial de conversación');
+            }
+        }
+
+        function closeHistoryModal() {
+            document.getElementById('historyModal').style.display = 'none';
+        }
+
+        // Event listeners para controles de conversación
+        document.getElementById('showHistoryBtn').addEventListener('click', showConversationHistory);
+        document.getElementById('clearConversationBtn').addEventListener('click', clearConversation);
+
+        // Cerrar modal haciendo clic fuera de él
+        document.getElementById('historyModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeHistoryModal();
+            }
+        });
+
         // Event listener para el formulario
         document.getElementById('queryForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -441,6 +660,12 @@
                     responseHeader.innerHTML = `<strong>Respuesta del modelo ${data.llm.toUpperCase()}:</strong>`;
                     responseContent.textContent = data.response;
                     responseContainer.style.display = 'block';
+                    
+                    // Actualizar contador de conversación
+                    if (data.conversation_length) {
+                        const infoText = `Mensajes en conversación: ${Math.ceil(data.conversation_length / 2)}`;
+                        document.getElementById('conversationInfo').textContent = infoText;
+                    }
                 } else {
                     responseHeader.innerHTML = '<strong>Error:</strong>';
                     responseHeader.className = 'response-header error';

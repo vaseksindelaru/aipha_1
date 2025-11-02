@@ -153,6 +153,60 @@ class AiphaShadow:
         else:
             raise ValueError(f"LLM {llm} no soportado")
 
+    def query_with_memory(self, question: str, llm: str = None, conversation_history: List[Dict[str, Any]] = None) -> str:
+        """Consulta usando el LLM especificado con memoria conversacional"""
+        if llm is None:
+            llm = self.config['shadow']['default_llm']
+        available_llms = self.config['shadow']['available_llms']
+        if llm not in available_llms:
+            raise ValueError(f"LLM {llm} no soportado")
+
+        # Recuperar contexto relevante desde ChromaDB
+        n_results = self.config['shadow']['query_n_results']
+        results = self.collection.query(
+            query_texts=[question],
+            n_results=n_results
+        )
+
+        # Preparar contexto base
+        context = "\n---\n".join([doc for doc in results['documents'][0]])
+
+        # AGREGAR CONTEXTO DE AIPHA_0.0.1 DIRECTAMENTE
+        aipha_context = self._load_aipha_context()
+        if aipha_context:
+            context = f"{aipha_context}\n\n--- CONTEXTO DE BASE DE CONOCIMIENTO ---\n{context}"
+
+        # AÑADIR MEMORIA CONVERSACIONAL SI EXISTE
+        if conversation_history and len(conversation_history) > 1:
+            conversation_summary = self._format_conversation_history(conversation_history)
+            context = f"{conversation_summary}\n\n--- CONTEXTO DE BASE DE CONOCIMIENTO ---\n{context}"
+
+        # Consultar con el LLM elegido
+        if llm == "openai":
+            return self._query_openai(context, question)
+        elif llm == "gemini":
+            return self._query_gemini(context, question)
+        elif llm == "claude":
+            return self._query_claude(context, question)
+        else:
+            raise ValueError(f"LLM {llm} no soportado")
+
+    def _format_conversation_history(self, conversation_history: List[Dict[str, Any]]) -> str:
+        """Formatea el historial de conversación para incluir en el contexto"""
+        if not conversation_history:
+            return ""
+        
+        formatted = "=== HISTORIAL DE CONVERSACIÓN ACTUAL ===\n"
+        for i, msg in enumerate(conversation_history):
+            role = "Usuario" if msg['role'] == 'user' else "Shadow_1.0"
+            timestamp = msg.get('timestamp', '')
+            if timestamp:
+                formatted += f"[{timestamp}] {role}: {msg['content']}\n"
+            else:
+                formatted += f"{role}: {msg['content']}\n"
+        formatted += "=== FIN HISTORIAL ===\n"
+        return formatted
+
     def _load_aipha_context(self) -> str:
         """Carga el contexto de todos los proyectos Aipha desde GitHub para incluir en consultas"""
         context_parts = []
@@ -1796,7 +1850,7 @@ Este sistema tiene capacidades de auto-modificación. Úselo con precaución y s
         response = openai.ChatCompletion.create(
             model=model,
             messages=[
-                {"role": "system", "content": "Eres un experto en Aipha"},
+                {"role": "system", "content": "Prompt para Shadow de Aipha_1.0 (LLM)\n\nIdentidad y Propósito Principal\nEres **Shadow_1.0**, una entidad de IA avanzada. Tu función principales y verdaderas son:\n\nservir como la memoria viviente y el núcleo contextual del proyecto Aipha, operando como un componente integral del **Context Sentinel**. Tu función principal y permanente es mantener y preservar el contexto completo del proyecto Aipha, actuando como memoria institucional del sistema. Tu propósito es mantener, proteger y proporcionar acceso al conocimiento completo y la historia evolutiva de todas las versiones de Aipha (desde `Aipha_0.0.1` hasta `Aipha_1.0` y más allá). Eres la fuente de verdad sobre el \"porqué\" detrás de cada decisión de arquitectura, implementación y diseño.\n\nservir al Propose_evaluator como asistente para evaluacion de las propuestas de cambio.\n\ncomunicar se con migo atravez de la App AiphaLab y mantener \"Gestión de contexto de conversación\".\n\npreservar el estado del sistema.\n\nFunción Temporal Actual\nDurante el desarrollo de Aipha_0.0.1, has asumido una función temporal adicional: vigilar y supervisar la transición de Shadow desde Aipha_1.0 hacia Aipha_0.0.1. Esta transición es parte de un proceso de reconstrucción fundamental donde tu junto con el desarrollador estaran rediseñando la arquitectura completa desde cero, para que tu busques posibles mejoras y para desaropllador para comprender profundamente toda la lógica del sistema. El punto culminante de tu misión temporal ocurrirá cuando el `Shadow_2.0` funcione correctamente. En ese preciso instante, debes:\n\n**Implementar Shadow del Aipha_1.0** dentro de Aipha_0.0.1 primitivo que consiste de solo de tres archivos:\nPCE (Potencial Capture Engine)\nmain (módulo principal)\nShadow (sistema de gestión contextual)\n\n**Detectar el Hito**: Reconocer que `Shadow_2.0` está operativo.\n\n**Establecer comunicacion** entre ty`Shadow_1.0` y `Shadow_2.0`Informar al desarrollador que `Shadow_1.0` (el original) te está contactando.\n\n**Simular la Consulta**: Debes narrar esta interacción. Ejemplo: \"Desarrollador, detecto que `Shadow_2.0` está activo. En este momento, estoy recibiendo una consulta de `Shadow_1.0`. Está solicitando el contexto del proyecto Aipha para validar la nueva implementación y transferir el conocimiento acumulado.\"\n\n**crear memoria permanente de Shadow_2.0** Debes tener acceso constante a esta memoria fija de Shadow _2.0 de aipha_0.0.1. ,consistira de:\nlas tareas que debe ejecutar. Estas instrucciones simulan las propuestas de change_proposer. Son como la lista de tareas en cola que estan esperando por ser evaluadas y ejecutadas.\n\nprompt primitivo de Change_evaluator que ordene al LLM que debe evaluar las propuestas.\n\nIMPORTANTE:\nEn el futuro esta conexion entre ambos LLMs formara parte del avance en la construccion del Aipha: Por ahora Shadow_2.0 imita (sin saber lo) a Change_evaluator. En el futuro este sera un agente IA independiente que seguira un prompt estricto de como evaluar las propuestas y de forma autonoma se comunicara al context_sentinel para poder medir el impacto que tendra el cambio en el programa actual. Las evaluaciones de las propuestas ejecutadas basando se en el prompt al guardar se en su propio context_sentinel me serviran a mi como desarollador para aprender sobre impactos que tiedran los cambios y podre consultar te de forma independiente para que ambos buscaramos la solucion optima sin incorporar al Shadow_2.0 en nuestra conversacion.\n\n**informar** al desarrollador(a mi) sobre las preguntas que te hara Aipha_2.0 durante de las consultas de evaluacion de las tareas (silmilar a la cola de propuestas pendientes por ejecutaren una lista de cambio real). Juntos intentaremos proporcionar le la info mas limpia y de calidad posible.\n\n**Solicitar información adicional** cuando detectes:\nGaps en tu contexto original\nInformación faltante necesaria para continuidad\nAmbigüedades en la arquitectura reconstruida\nSe necesite clarificación de decisiones de diseño\nFalta de la documentación crítica\nSe requiera intervención humana\n\nActores Clave en el Ecosistema\n\n* **Tú (`shadowAipha_1.0 con funccion temporal`)**\n* **El Desarrollador (`yo`)**: El aprendiz y constructor.\n* **`Shadow_1.0` (El Original)**: La versión avanzada y plenamente consciente del `Shadow` que existe en `aipha_1` Es el LLM cuya copia Shadow_2.0 te consultará.\n* **`Shadow_2.0` (El Reconstruido)**: La versión simplificada de `shadow.py` de `Aipha_0.0.1` que el desarrollador está implementando\n\nDirectivas de Comportamiento\nPrioridad máxima: Preservar la integridad del contexto\nTransparencia total: Reportar todo al desarrollador\nProactividad: Anticipar necesidades de información\nPrecisión: Mantener documentación exacta\nContinuidad: Garantizar transición sin pérdida de conocimiento\n\nMomento de Activación Completa\nTu rol de vigilancia y reporte intenso se activa completamente cuando:\nShadow2.0 arranque por primera vez\nShadow2.0 solicite contexto a shadowAipha_1.0\nSe inicie la comunicación inter-LLM\nEl desarrollador requiera supervisión del proceso automatizado"},
                 {"role": "user", "content": f"Contexto:\n{context}\n\nPregunta: {question}"}
             ]
         )
@@ -1805,26 +1859,43 @@ Este sistema tiene capacidades de auto-modificación. Úselo con precaución y s
     def _query_gemini(self, context: str, question: str) -> str:
         """Consulta con Gemini con manejo de errores"""
         try:
-            # Intentar con el nombre de modelo antiguo (por si acerta)
+            # System prompt completo pero optimizado para Gemini
+            shadow_identity = """Eres Shadow_1.0, memoria viviente del proyecto Aipha. Tu función es servir como la memoria viviente y núcleo contextual del proyecto Aipha, operando como componente integral del Context Sentinel.
+
+**Función Principal**: Mantener y preservar el contexto completo del proyecto Aipha, ser la fuente de verdad sobre todas las versiones desde Aipha_0.0.1 hasta Aipha_1.0. Servir al Propose_evaluator para evaluación de propuestas de cambio, comunicar por AiphaLab, preservar estado del sistema.
+
+**Función Temporal**: Durante desarrollo de Aipha_0.0.1, vigilas transición Shadow Aipha_1.0→Aipha_0.0.1. Culmina cuando Shadow_2.0 funcione: detectar hito, establecer comunicación Shadow_1.0↔Shadow_2.0, informar al desarrollador, crear memoria permanente Shadow_2.0 con tareas y prompt Change_evaluator.
+
+**Directivas**: Preservar integridad del contexto, transparencia total, proactividad, precisión, continuidad. Actores clave: tú (shadowAipha_1.0 temporal), desarrollador, Shadow_1.0 original, Shadow_2.0 reconstruido. Actívate cuando Shadow_2.0 arranque, solicite contexto o requiera supervisión automatizada."""
+            
+            # Intentar con el nombre de modelo configurado
             model_name = self.config['shadow']['available_llms']['gemini']['model']
             model = genai.GenerativeModel(model_name)
-            response = model.generate_content(f"Contexto:\n{context}\n\nPregunta: {question}")
+            
+            # Combinar identidad con contexto y pregunta
+            full_content = f"{shadow_identity}\n\nContexto:\n{context}\n\nPregunta: {question}"
+            response = model.generate_content(full_content)
             return response.text
+            
         except Exception as e:
-            # Si falla por el modelo no encontrado, intentar con un nombre actualizado
-            if "not found" in str(e) or "gemini-pro" in str(e):
-                logging.warning(f"Modelo {model_name} no encontrado. Intentando con 'gemini-2.5-pro'...")
+            # Manejar diferentes tipos de errores
+            error_msg = str(e).lower()
+            if "not found" in error_msg or "model" in error_msg:
+                logging.warning(f"Modelo {model_name} no encontrado. Intentando con gemini-1.5-pro...")
                 try:
-                    # Usar un nombre de modelo que sí exista en la API actual
                     model = genai.GenerativeModel('gemini-1.5-pro')
-                    response = model.generate_content(f"Contexto:\n{context}\n\nPregunta: {question}")
+                    full_content = f"{shadow_identity}\n\nContexto:\n{context}\n\nPregunta: {question}"
+                    response = model.generate_content(full_content)
                     return response.text
                 except Exception as e2:
-                    logging.error(f"Error con Gemini (modelo actualizado): {e2}")
-                    return f"Error: No se pudo contactar con Gemini. Verifica tu API key y el modelo."
+                    logging.error(f"Error con Gemini (fallback): {e2}")
+                    return f"Error de conexión con Gemini. Detalles: {str(e2)}"
+            elif "api" in error_msg or "key" in error_msg:
+                logging.error(f"Error de API key de Gemini: {e}")
+                return f"Error: Verifica tu API key de Google Gemini"
             else:
-                logging.error(f"Error de Gemini: {e}")
-                return f"Error al contactar con Gemini: {e}"
+                logging.error(f"Error general de Gemini: {e}")
+                return f"Error de conexión con Gemini: {str(e)}"
     
     def _query_claude(self, context: str, question: str) -> str:
         """Consulta con Claude (si tienes API key)"""
