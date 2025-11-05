@@ -1,31 +1,64 @@
-# shadow/config_shadow.yaml
 shadow:
-  # Rutas para el almacenamiento de datos del sistema Shadow
-  storage_path: './shadow_storage'      # Base para todos los datos del shadow
-  vector_db_path: './shadow_storage/vector_db' # Ruta específica para la base de datos vectorial ChromaDB
-  
-  # Configuración de la base de datos vectorial (ChromaDB)
-  collection_name: 'aipha_shadow_collection' # Nombre de la colección donde se guardarán los documentos
-  embedding_model: 'all-MiniLM-L6-v2'         # Modelo de SentenceTransformer para crear embeddings
-
-  # Configuración de las consultas
-  query_n_results: 5                           # Número máximo de documentos a recuperar como contexto
-
-  # Configuración de los LLMs (Modelos de Lenguaje Grande) disponibles
   available_llms:
     openai:
-      model: 'gpt-3.5-turbo'      # Modelo específico de OpenAI a usar
+      model: "gpt-3.5-turbo"
     gemini:
-      model: 'gemini-2.5-pro'          # Modelo específico de Google Gemini a usar
-    # claude:                         # Ejemplo para futuras expansiones
-    #   model: 'claude-3-opus-20240229'
-  
-  # LLM por defecto para las consultas si no se especifica con --llm
-  default_llm: 'gemini'
+      model: "gemini-2.5-pro"
+    claude:
+      model: "claude-3-sonnet"
+  default_llm: "gemini"
 
-  # Configuración de la sincronización con el repositorio principal
-  sync:
-    source_path: '../'                # Ruta al directorio del proyecto Aipha principal
-    # Opcionales para una lógica de sincronización más avanzada:
-    # file_extensions: ['.py', '.yaml', '.md']   # Tipos de archivo a indexar
-    # ignore_dirs: ['.git', '__pycache__', 'node_modules'] # Directorios a excluir del escaneo
+# CONFIGURACIÓN DE INTEGRACIÓN GEMINI (NUEVA FUNCIONALIDAD)
+gemini_integration:
+  enabled: true
+  api_endpoint: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent"
+  api_key: "${GOOGLE_API_KEY}"
+  shadow_alpha_id: "shadowAipha_1.0"
+  communication_mode: "hybrid"
+  sync_interval: 300
+  rate_limiting:
+    max_requests_per_hour: 100
+    min_interval_seconds: 1
+  authentication:
+    secret_key: "${SHADOW_GEMINI_SECRET}"
+    signature_algorithm: "HMAC-SHA256"
+    token_expiry_minutes: 5
+
+# CONFIGURACIÓN DE MEMORIA SHADOW
+shadow_memory:
+  base_path: "./aipha_memory_storage/action_history"
+  max_history_entries: 10000
+  compression_enabled: false
+  backup_enabled: true
+  backup_interval_hours: 24
+  retention_days: 30
+  cleanup:
+    auto_cleanup: true
+    cleanup_interval_hours: 6
+
+# CONFIGURACIÓN DE LOGGING
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file_logging:
+    enabled: true
+    log_directory: "./logs"
+    max_file_size_mb: 10
+    backup_count: 3
+  console_logging:
+    enabled: true
+    color_output: true
+
+# CONFIGURACIÓN DE COMUNICACIÓN
+communication:
+  enabled: true
+  sync_interval: 300
+  retry_attempts: 3
+  timeout_seconds: 30
+
+# METADATOS
+metadata:
+  version: "1.0.0"
+  last_updated: "2025-11-04T12:30:27.286Z"
+  created_by: "Shadow System"
+  environment: "production"

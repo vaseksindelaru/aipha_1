@@ -1,0 +1,254 @@
+# config_shadow.yaml - Configuración del Sistema Shadow-AiphaLab
+# Configuración centralizada para todos los componentes críticos implementados
+
+# =============================================================================
+# CONFIGURACIÓN SHADOW (COMPATIBLE CON aipha_shadow_simple.py)
+# =============================================================================
+shadow:
+  available_llms:
+    openai:
+      model: "gpt-3.5-turbo"
+    gemini:
+      model: "gemini-1.5-pro"
+    claude:
+      model: "claude-3-sonnet"
+  default_llm: "gemini"
+
+# =============================================================================
+# CONFIGURACIÓN DE INTEGRACIÓN GEMINI (NUEVA FUNCIONALIDAD)
+# =============================================================================
+gemini_integration:
+  enabled: true
+  api_endpoint: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent"
+  api_key: "${GOOGLE_API_KEY}"  # Variable de entorno
+  shadow_alpha_id: "shadowAipha_1.0"
+  communication_mode: "hybrid"  # push, pull, o hybrid
+  sync_interval: 300  # Cada 5 segundos (en milisegundos)
+  rate_limiting:
+    max_requests_per_hour: 100
+    min_interval_seconds: 1
+  authentication:
+    secret_key: "${SHADOW_GEMINI_SECRET}"  # Variable de entorno
+    signature_algorithm: "HMAC-SHA256"
+    token_expiry_minutes: 5
+
+# =============================================================================
+# CONFIGURACIÓN DE WEBHOOK LISTENER
+# =============================================================================
+webhook_listener:
+  enabled: true
+  host: "0.0.0.0"
+  port: 8081
+  debug: false
+  cors_enabled: true
+  endpoints:
+    context_request: "/shadow/gemini/context-request"
+    integrity_check: "/shadow/gemini/integrity-check" 
+    changes_notification: "/shadow/gemini/changes-notification"
+    status: "/shadow/gemini/status"
+    health: "/health"
+  rate_limiting:
+    max_requests_per_hour: 100
+    burst_limit: 10
+  security:
+    require_authentication: true
+    allowed_origins: ["*"]  # Configurar según necesidades
+    max_request_size_mb: 10
+
+# =============================================================================
+# CONFIGURACIÓN DEL PROTOCOLO LLM-TO-LLM
+# =============================================================================
+llm_protocol:
+  enabled: true
+  current_version: "shadow_1.0"
+  target_versions: 
+    - "shadow_2.0"
+    - "shadow_1.5"
+  communication:
+    handshake_timeout_seconds: 30
+    context_transfer_timeout_seconds: 60
+    validation_timeout_seconds: 10
+  context_transfer:
+    mode: "full"  # full, incremental, differential
+    max_entries_per_transfer: 1000
+    batch_size: 100
+    compression_enabled: true
+  integrity_validation:
+    checksum_algorithm: "SHA256"
+    validation_strict_mode: true
+    allow_partial_validations: false
+  logging:
+    log_communications: true
+    log_level: "INFO"
+    max_log_entries: 1000
+
+# =============================================================================
+# CONFIGURACIÓN DE MONITOREO DE REPOSITORIO
+# =============================================================================
+repository_monitoring:
+  enabled: true
+  target_repository:
+    url: "https://github.com/vaseksindelaru/aipha_0.0.1.git"
+    local_path: "./monitored_repos/aipha_0.0.1"
+    auto_clone: true
+    auto_update: true
+  monitoring:
+    check_interval_seconds: 30
+    file_patterns:
+      - "*.py"
+      - "*.md" 
+      - "*.json"
+      - "*.yaml"
+      - "*.yml"
+    ignore_patterns:
+      - ".git/*"
+      - "__pycache__/*"
+      - "*.pyc"
+      - "*.tmp"
+  analysis:
+    auto_analyze_changes: true
+    deep_code_analysis: true
+    generate_summaries: true
+    max_files_per_analysis: 50
+
+# =============================================================================
+# CONFIGURACIÓN DE ANÁLISIS DE INTEGRIDAD
+# =============================================================================
+integrity_analysis:
+  enabled: true
+  target_path: "../Aipha_0.0.1"
+  analysis_interval_minutes: 15
+  deep_analysis:
+    enabled: true
+    checksum_algorithms: ["MD5", "SHA256"]
+    include_file_content: true
+    max_file_size_mb: 5
+  reporting:
+    generate_reports: true
+    report_format: "json"
+    include_metrics: true
+    save_to_memory: true
+
+# =============================================================================
+# CONFIGURACIÓN DE MEMORIA SHADOW
+# =============================================================================
+shadow_memory:
+  base_path: "./aipha_memory_storage/action_history"
+  current_history_file: "current_history.json"
+  max_history_entries: 10000
+  compression_enabled: false
+  backup_enabled: true
+  backup_interval_hours: 24
+  retention_days: 90
+  indexing:
+    enabled: true
+    index_fields: ["timestamp", "action", "component", "status"]
+  cleanup:
+    auto_cleanup: true
+    cleanup_interval_hours: 6
+    max_age_days: 30
+
+# =============================================================================
+# CONFIGURACIÓN DE LOGGING
+# =============================================================================
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file_logging:
+    enabled: true
+    log_directory: "./logs"
+    max_file_size_mb: 100
+    backup_count: 5
+  console_logging:
+    enabled: true
+    color_output: true
+  component_logs:
+    gemini_client: "INFO"
+    webhook_listener: "INFO"
+    llm_protocol: "INFO"
+    repository_monitor: "INFO"
+    integrity_analyzer: "INFO"
+
+# =============================================================================
+# CONFIGURACIÓN DE CACHE
+# =============================================================================
+cache:
+  enabled: true
+  cache_type: "memory"  # memory, file, redis
+  default_ttl_seconds: 300  # 5 minutos
+  max_size_mb: 100
+  cleanup_interval_minutes: 10
+  cache_keys:
+    context_cache: "context:{hash}"
+    integrity_cache: "integrity:{timestamp}"
+    repository_cache: "repo:{checksum}"
+
+# =============================================================================
+# CONFIGURACIÓN DE NOTIFICACIONES
+# =============================================================================
+notifications:
+  enabled: true
+  channels:
+    memory_log: true
+    console_output: true
+    file_log: true
+  alert_conditions:
+    integrity_score_below: 80
+    consecutive_failures: 3
+    repository_unavailable: true
+    communication_failures: 5
+  message_templates:
+    integrity_alert: "⚠️  Alerta de integridad: Score {score}/100"
+    communication_error: "❌ Error de comunicación: {error}"
+    repository_status: "📊 Estado repositorio: {status}"
+
+# =============================================================================
+# CONFIGURACIÓN DE DESARROLLO Y TESTING
+# =============================================================================
+development:
+  enabled: false  # Cambiar a true para desarrollo
+  debug_mode: false
+  mock_external_apis: false
+  test_repository_path: "./test_data/aipha_0.0.1"
+  simulation_mode: false
+  performance_testing:
+    enabled: false
+    load_test_requests: 100
+    concurrent_users: 5
+
+# =============================================================================
+# CONFIGURACIÓN DE EXTENSIONES FUTURAS
+# =============================================================================
+extensions:
+  enabled: false
+  plugin_directory: "./plugins"
+  auto_load_plugins: false
+  available_extensions:
+    - "webhook_handler"
+    - "api_validator" 
+    - "metrics_collector"
+    - "notification_service"
+
+# =============================================================================
+# CONFIGURACIÓN DE PERFORMANCE
+# =============================================================================
+performance:
+  max_concurrent_operations: 10
+  operation_timeout_seconds: 30
+  memory_limit_mb: 512
+  cpu_limit_percent: 80
+  disk_usage_limit_percent: 90
+  network_timeout_seconds: 30
+  retry_attempts: 3
+  retry_delay_seconds: 5
+
+# =============================================================================
+# METADATOS DE CONFIGURACIÓN
+# =============================================================================
+metadata:
+  version: "1.0.0"
+  last_updated: "2025-11-04T12:27:33.873Z"
+  created_by: "Shadow System"
+  environment: "production"  # development, staging, production
+  requires_restart: false
+  config_validation: strict

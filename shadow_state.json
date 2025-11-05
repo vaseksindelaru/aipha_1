@@ -1,0 +1,978 @@
+{
+  "timestamp": "2025-11-04T02:16:22.272505",
+  "project_path": "/home/vaclav/aipha_1",
+  "files": {
+    "shadow_memory.json": {
+      "path": "shadow_memory.json",
+      "size": 2087,
+      "modified": 1761159553.959884,
+      "created": 1761159553.959884,
+      "is_file": true,
+      "extension": ".json",
+      "last_seen": "2025-11-04T02:16:18.160076"
+    },
+    "shadow.py": {
+      "path": "shadow.py",
+      "size": 12018,
+      "modified": 1761159544.8028283,
+      "created": 1761159544.8028283,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.160193"
+    },
+    "shadow_proactive.log": {
+      "path": "shadow_proactive.log",
+      "size": 450214,
+      "modified": 1762218982.2695181,
+      "created": 1762218982.2695181,
+      "is_file": true,
+      "extension": ".log",
+      "last_seen": "2025-11-04T02:16:22.271114",
+      "last_event": "modified"
+    },
+    "shadow_state.json": {
+      "path": "shadow_state.json",
+      "size": 31825,
+      "modified": 1762218978.2554588,
+      "created": 1762218978.2554588,
+      "is_file": true,
+      "extension": ".json",
+      "last_seen": "2025-11-04T02:16:18.259953",
+      "last_event": "modified"
+    },
+    "shadow_change_registration.json": {
+      "path": "shadow_change_registration.json",
+      "size": 2235,
+      "modified": 1762175573.9075284,
+      "created": 1762175573.9075284,
+      "is_file": true,
+      "extension": ".json",
+      "last_seen": "2025-11-04T02:16:18.160478"
+    },
+    "prompt_gemini_changeproposer.md": {
+      "path": "prompt_gemini_changeproposer.md",
+      "size": 6437,
+      "modified": 1762098850.3469143,
+      "created": 1762098850.3469143,
+      "is_file": true,
+      "extension": ".md",
+      "last_seen": "2025-11-04T02:16:18.160548"
+    },
+    "quick_test.sh": {
+      "path": "quick_test.sh",
+      "size": 3661,
+      "modified": 1762217316.739796,
+      "created": 1762217316.739796,
+      "is_file": true,
+      "extension": ".sh",
+      "last_seen": "2025-11-04T02:16:18.160622"
+    },
+    "test_config.py": {
+      "path": "test_config.py",
+      "size": 250,
+      "modified": 1760251574.0178466,
+      "created": 1760251574.0178466,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.160674"
+    },
+    "run_interactive.py": {
+      "path": "run_interactive.py",
+      "size": 1992,
+      "modified": 1760343290.0831325,
+      "created": 1760343290.0831325,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.160723"
+    },
+    "sync_shadow.sh": {
+      "path": "sync_shadow.sh",
+      "size": 203,
+      "modified": 1760242526.335672,
+      "created": 1760242542.052381,
+      "is_file": true,
+      "extension": ".sh",
+      "last_seen": "2025-11-04T02:16:18.160771"
+    },
+    ".gitignore": {
+      "path": ".gitignore",
+      "size": 793,
+      "modified": 1760248290.8319175,
+      "created": 1760248290.8319175,
+      "is_file": true,
+      "extension": "",
+      "last_seen": "2025-11-04T02:16:18.160818"
+    },
+    "main.py": {
+      "path": "main.py",
+      "size": 6578,
+      "modified": 1761198389.4780715,
+      "created": 1761198389.4780715,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.160867"
+    },
+    "context_for_aiphalab.md": {
+      "path": "context_for_aiphalab.md",
+      "size": 2527,
+      "modified": 1762201651.8425055,
+      "created": 1762201651.8425055,
+      "is_file": true,
+      "extension": ".md",
+      "last_seen": "2025-11-04T02:16:18.160916"
+    },
+    "app.py": {
+      "path": "app.py",
+      "size": 4236,
+      "modified": 1762101941.780191,
+      "created": 1762101941.780191,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.161021"
+    },
+    "config.yaml": {
+      "path": "config.yaml",
+      "size": 581,
+      "modified": 1760243260.9571676,
+      "created": 1760243260.9571676,
+      "is_file": true,
+      "extension": ".yaml",
+      "last_seen": "2025-11-04T02:16:18.161119"
+    },
+    "run_local_monitor.sh": {
+      "path": "run_local_monitor.sh",
+      "size": 1186,
+      "modified": 1762194737.5180798,
+      "created": 1762194768.9196334,
+      "is_file": true,
+      "extension": ".sh",
+      "last_seen": "2025-11-04T02:16:18.161205"
+    },
+    "test_context.md": {
+      "path": "test_context.md",
+      "size": 2527,
+      "modified": 1762201318.6120665,
+      "created": 1762201318.6120665,
+      "is_file": true,
+      "extension": ".md",
+      "last_seen": "2025-11-04T02:16:18.161290"
+    },
+    "transition_plan_aipha_to_shadow2.md": {
+      "path": "transition_plan_aipha_to_shadow2.md",
+      "size": 15452,
+      "modified": 1762195278.9951637,
+      "created": 1762195278.9951637,
+      "is_file": true,
+      "extension": ".md",
+      "last_seen": "2025-11-04T02:16:18.161386"
+    },
+    "run_github_monitor.sh": {
+      "path": "run_github_monitor.sh",
+      "size": 1245,
+      "modified": 1762191270.9880326,
+      "created": 1762191285.301979,
+      "is_file": true,
+      "extension": ".sh",
+      "last_seen": "2025-11-04T02:16:18.161476"
+    },
+    "automated_guidance_system.md": {
+      "path": "automated_guidance_system.md",
+      "size": 16016,
+      "modified": 1762195315.0097432,
+      "created": 1762195315.0097432,
+      "is_file": true,
+      "extension": ".md",
+      "last_seen": "2025-11-04T02:16:18.161559"
+    },
+    "run": {
+      "path": "run",
+      "size": 1431,
+      "modified": 1762191875.1661146,
+      "created": 1762191898.64125,
+      "is_file": true,
+      "extension": "",
+      "last_seen": "2025-11-04T02:16:18.161634"
+    },
+    ".env": {
+      "path": ".env",
+      "size": 133,
+      "modified": 1760248836.9742193,
+      "created": 1760248836.9742193,
+      "is_file": true,
+      "extension": "",
+      "last_seen": "2025-11-04T02:16:18.161700"
+    },
+    "scripts/validate_shadow_health.py": {
+      "path": "scripts/validate_shadow_health.py",
+      "size": 17515,
+      "modified": 1762216922.4267452,
+      "created": 1762216922.4267452,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.161885"
+    },
+    "shadow_storage/chroma_db/chroma.sqlite3": {
+      "path": "shadow_storage/chroma_db/chroma.sqlite3",
+      "size": 163840,
+      "modified": 1761196243.9078965,
+      "created": 1761196243.9078965,
+      "is_file": true,
+      "extension": ".sqlite3",
+      "last_seen": "2025-11-04T02:16:18.162186"
+    },
+    "shadow_storage/vector_db/chroma.sqlite3": {
+      "path": "shadow_storage/vector_db/chroma.sqlite3",
+      "size": 495632384,
+      "modified": 1762101750.6993175,
+      "created": 1762101750.6993175,
+      "is_file": true,
+      "extension": ".sqlite3",
+      "last_seen": "2025-11-04T02:16:18.162397"
+    },
+    "shadow_storage/vector_db/fcfa2b94-5223-49fa-a2f3-ade85a9cca79/index_metadata.pickle": {
+      "path": "shadow_storage/vector_db/fcfa2b94-5223-49fa-a2f3-ade85a9cca79/index_metadata.pickle",
+      "size": 403328,
+      "modified": 1762098598.0772417,
+      "created": 1762098598.0772417,
+      "is_file": true,
+      "extension": ".pickle",
+      "last_seen": "2025-11-04T02:16:18.162591"
+    },
+    "shadow_storage/vector_db/fcfa2b94-5223-49fa-a2f3-ade85a9cca79/header.bin": {
+      "path": "shadow_storage/vector_db/fcfa2b94-5223-49fa-a2f3-ade85a9cca79/header.bin",
+      "size": 100,
+      "modified": 1762098598.0702417,
+      "created": 1762098598.0702417,
+      "is_file": true,
+      "extension": ".bin",
+      "last_seen": "2025-11-04T02:16:18.162690"
+    },
+    "shadow_storage/vector_db/fcfa2b94-5223-49fa-a2f3-ade85a9cca79/link_lists.bin": {
+      "path": "shadow_storage/vector_db/fcfa2b94-5223-49fa-a2f3-ade85a9cca79/link_lists.bin",
+      "size": 16508,
+      "modified": 1762098598.0762417,
+      "created": 1762098598.0762417,
+      "is_file": true,
+      "extension": ".bin",
+      "last_seen": "2025-11-04T02:16:18.162788"
+    },
+    "shadow_storage/vector_db/fcfa2b94-5223-49fa-a2f3-ade85a9cca79/length.bin": {
+      "path": "shadow_storage/vector_db/fcfa2b94-5223-49fa-a2f3-ade85a9cca79/length.bin",
+      "size": 7736,
+      "modified": 1762098598.0732417,
+      "created": 1762098598.0732417,
+      "is_file": true,
+      "extension": ".bin",
+      "last_seen": "2025-11-04T02:16:18.162883"
+    },
+    "shadow_storage/vector_db/fcfa2b94-5223-49fa-a2f3-ade85a9cca79/data_level0.bin": {
+      "path": "shadow_storage/vector_db/fcfa2b94-5223-49fa-a2f3-ade85a9cca79/data_level0.bin",
+      "size": 3241384,
+      "modified": 1762098598.0722418,
+      "created": 1762098598.0722418,
+      "is_file": true,
+      "extension": ".bin",
+      "last_seen": "2025-11-04T02:16:18.162993"
+    },
+    "docs/CRITICAL_CONTRACTS.md": {
+      "path": "docs/CRITICAL_CONTRACTS.md",
+      "size": 6945,
+      "modified": 1760344632.692473,
+      "created": 1760344632.692473,
+      "is_file": true,
+      "extension": ".md",
+      "last_seen": "2025-11-04T02:16:18.163182"
+    },
+    "aipha/__init__.py": {
+      "path": "aipha/__init__.py",
+      "size": 341,
+      "modified": 1759480327.0426993,
+      "created": 1759480327.0426993,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.163383"
+    },
+    "aipha/core/context_sentinel.py": {
+      "path": "aipha/core/context_sentinel.py",
+      "size": 19343,
+      "modified": 1760338307.2932506,
+      "created": 1760338307.2932506,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.163612"
+    },
+    "aipha/core/__init__.py": {
+      "path": "aipha/core/__init__.py",
+      "size": 224,
+      "modified": 1759480421.7312546,
+      "created": 1759480421.7312546,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.163700"
+    },
+    "aipha/core/atomic_update_system.py": {
+      "path": "aipha/core/atomic_update_system.py",
+      "size": 22655,
+      "modified": 1759865532.0426686,
+      "created": 1759865532.0426686,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.163784"
+    },
+    "aipha/core/test_context_sentinel.py": {
+      "path": "aipha/core/test_context_sentinel.py",
+      "size": 883,
+      "modified": 1760064455.5091498,
+      "created": 1760064455.5091498,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.163868"
+    },
+    "aipha/core/redesign_helper.py": {
+      "path": "aipha/core/redesign_helper.py",
+      "size": 16293,
+      "modified": 1760343366.298393,
+      "created": 1760343366.298393,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.163951"
+    },
+    "aipha/core/tools/change_proposer.py": {
+      "path": "aipha/core/tools/change_proposer.py",
+      "size": 7211,
+      "modified": 1760339244.8638446,
+      "created": 1760339244.8638446,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.164157"
+    },
+    "aipha/core/tools/__init__.py": {
+      "path": "aipha/core/tools/__init__.py",
+      "size": 0,
+      "modified": 1759344485.2925088,
+      "created": 1759344485.2925088,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.164262"
+    },
+    "aipha/core/tools/proposal_evaluator.py": {
+      "path": "aipha/core/tools/proposal_evaluator.py",
+      "size": 15262,
+      "modified": 1760340352.040131,
+      "created": 1760340352.040131,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.164362"
+    },
+    "aipha/core/tools/codecraft_sage.py": {
+      "path": "aipha/core/tools/codecraft_sage.py",
+      "size": 24973,
+      "modified": 1760341592.4888616,
+      "created": 1760341592.4888616,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.164473"
+    },
+    "aipha/core/tools/basic_rules_proposer.py": {
+      "path": "aipha/core/tools/basic_rules_proposer.py",
+      "size": 6401,
+      "modified": 1760343306.5944057,
+      "created": 1760343306.5944057,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.164578"
+    },
+    "aipha/core/knowledge_manager/__init__.py": {
+      "path": "aipha/core/knowledge_manager/__init__.py",
+      "size": 0,
+      "modified": 1760060493.325793,
+      "created": 1760060493.325793,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.164783"
+    },
+    "aipha/core/knowledge_manager/manager.py": {
+      "path": "aipha/core/knowledge_manager/manager.py",
+      "size": 13891,
+      "modified": 1760338389.4915247,
+      "created": 1760338389.4915247,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.164888"
+    },
+    "aipha/core/knowledge_manager/test_manager.py": {
+      "path": "aipha/core/knowledge_manager/test_manager.py",
+      "size": 2749,
+      "modified": 1760064515.331224,
+      "created": 1760064515.331224,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.165000"
+    },
+    "aipha_memory_storage/global_state.json": {
+      "path": "aipha_memory_storage/global_state.json",
+      "size": 2,
+      "modified": 1759644148.396053,
+      "created": 1759644148.396053,
+      "is_file": true,
+      "extension": ".json",
+      "last_seen": "2025-11-04T02:16:18.165275"
+    },
+    "aipha_memory_storage/knowledge_base.db": {
+      "path": "aipha_memory_storage/knowledge_base.db",
+      "size": 40960,
+      "modified": 1759644148.7920594,
+      "created": 1759644148.7920594,
+      "is_file": true,
+      "extension": ".db",
+      "last_seen": "2025-11-04T02:16:18.165368"
+    },
+    "aipha_memory_storage/VERSION_HISTORY.json": {
+      "path": "aipha_memory_storage/VERSION_HISTORY.json",
+      "size": 386,
+      "modified": 1759644148.396053,
+      "created": 1759644148.396053,
+      "is_file": true,
+      "extension": ".json",
+      "last_seen": "2025-11-04T02:16:18.165454"
+    },
+    "aipha_memory_storage/action_history.json": {
+      "path": "aipha_memory_storage/action_history.json",
+      "size": 2,
+      "modified": 1759644148.397053,
+      "created": 1759644148.397053,
+      "is_file": true,
+      "extension": ".json",
+      "last_seen": "2025-11-04T02:16:18.165537"
+    },
+    "aipha_memory_storage/global_state/current_state.json": {
+      "path": "aipha_memory_storage/global_state/current_state.json",
+      "size": 448,
+      "modified": 1759644148.4660542,
+      "created": 1759644148.4660542,
+      "is_file": true,
+      "extension": ".json",
+      "last_seen": "2025-11-04T02:16:18.165721"
+    },
+    "aipha_memory_storage/config/dependencies.lock.json": {
+      "path": "aipha_memory_storage/config/dependencies.lock.json",
+      "size": 2,
+      "modified": 1759644148.397053,
+      "created": 1759644148.397053,
+      "is_file": true,
+      "extension": ".json",
+      "last_seen": "2025-11-04T02:16:18.165896"
+    },
+    "aipha_memory_storage/action_history/current_history.json": {
+      "path": "aipha_memory_storage/action_history/current_history.json",
+      "size": 232643,
+      "modified": 1762218231.1714337,
+      "created": 1762218231.1714337,
+      "is_file": true,
+      "extension": ".json",
+      "last_seen": "2025-11-04T02:16:18.166082"
+    },
+    "aipha_project/chroma_db/chroma.sqlite3": {
+      "path": "aipha_project/chroma_db/chroma.sqlite3",
+      "size": 1228800,
+      "modified": 1760344667.2608964,
+      "created": 1760344667.2608964,
+      "is_file": true,
+      "extension": ".sqlite3",
+      "last_seen": "2025-11-04T02:16:18.166381"
+    },
+    "aipha_project/chroma_db/9ed994b1-4047-470d-a251-6b0bc95e1870/header.bin": {
+      "path": "aipha_project/chroma_db/9ed994b1-4047-470d-a251-6b0bc95e1870/header.bin",
+      "size": 100,
+      "modified": 1760344662.1418333,
+      "created": 1760344662.1418333,
+      "is_file": true,
+      "extension": ".bin",
+      "last_seen": "2025-11-04T02:16:18.166549"
+    },
+    "aipha_project/chroma_db/9ed994b1-4047-470d-a251-6b0bc95e1870/link_lists.bin": {
+      "path": "aipha_project/chroma_db/9ed994b1-4047-470d-a251-6b0bc95e1870/link_lists.bin",
+      "size": 0,
+      "modified": 1760344662.1418333,
+      "created": 1760344662.1418333,
+      "is_file": true,
+      "extension": ".bin",
+      "last_seen": "2025-11-04T02:16:18.166641"
+    },
+    "aipha_project/chroma_db/9ed994b1-4047-470d-a251-6b0bc95e1870/length.bin": {
+      "path": "aipha_project/chroma_db/9ed994b1-4047-470d-a251-6b0bc95e1870/length.bin",
+      "size": 400,
+      "modified": 1760344662.1418333,
+      "created": 1760344662.1418333,
+      "is_file": true,
+      "extension": ".bin",
+      "last_seen": "2025-11-04T02:16:18.166737"
+    },
+    "aipha_project/chroma_db/9ed994b1-4047-470d-a251-6b0bc95e1870/data_level0.bin": {
+      "path": "aipha_project/chroma_db/9ed994b1-4047-470d-a251-6b0bc95e1870/data_level0.bin",
+      "size": 167600,
+      "modified": 1760344662.1418333,
+      "created": 1760344662.1418333,
+      "is_file": true,
+      "extension": ".bin",
+      "last_seen": "2025-11-04T02:16:18.166838"
+    },
+    "monitored_repos/aipha_0.0.1/shadow.py": {
+      "path": "monitored_repos/aipha_0.0.1/shadow.py",
+      "size": 1280,
+      "modified": 1762191296.7639399,
+      "created": 1762191296.7639399,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.167183"
+    },
+    "monitored_repos/aipha_0.0.1/README.md": {
+      "path": "monitored_repos/aipha_0.0.1/README.md",
+      "size": 6551,
+      "modified": 1762193908.381395,
+      "created": 1762193908.381395,
+      "is_file": true,
+      "extension": ".md",
+      "last_seen": "2025-11-04T02:16:18.167280"
+    },
+    "monitored_repos/aipha_0.0.1/config_loader.py": {
+      "path": "monitored_repos/aipha_0.0.1/config_loader.py",
+      "size": 7514,
+      "modified": 1762191296.76294,
+      "created": 1762191296.76294,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.167373"
+    },
+    "monitored_repos/aipha_0.0.1/main.py": {
+      "path": "monitored_repos/aipha_0.0.1/main.py",
+      "size": 4059,
+      "modified": 1762191296.76294,
+      "created": 1762191296.76294,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.167464"
+    },
+    "monitored_repos/aipha_0.0.1/potential_capture_engine.py": {
+      "path": "monitored_repos/aipha_0.0.1/potential_capture_engine.py",
+      "size": 3247,
+      "modified": 1762191296.7639399,
+      "created": 1762191296.7639399,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.167544"
+    },
+    "monitored_repos/aipha_0.0.1/config.json": {
+      "path": "monitored_repos/aipha_0.0.1/config.json",
+      "size": 1227,
+      "modified": 1762191296.76294,
+      "created": 1762191296.76294,
+      "is_file": true,
+      "extension": ".json",
+      "last_seen": "2025-11-04T02:16:18.167598"
+    },
+    "shadow/ingest_design_plan.py": {
+      "path": "shadow/ingest_design_plan.py",
+      "size": 9494,
+      "modified": 1760347397.0636966,
+      "created": 1760347397.0636966,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.167829"
+    },
+    "shadow/__init__.py": {
+      "path": "shadow/__init__.py",
+      "size": 147,
+      "modified": 1762101715.7285945,
+      "created": 1762101715.7285945,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.167920"
+    },
+    "shadow/_init__.py": {
+      "path": "shadow/_init__.py",
+      "size": 0,
+      "modified": 1760267373.556455,
+      "created": 1760267373.556455,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.168020"
+    },
+    "shadow/shadow_proactive.py": {
+      "path": "shadow/shadow_proactive.py",
+      "size": 18211,
+      "modified": 1762218947.8300107,
+      "created": 1762218947.8300107,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.168107"
+    },
+    "shadow/local_code_monitor.py": {
+      "path": "shadow/local_code_monitor.py",
+      "size": 24177,
+      "modified": 1762194728.003911,
+      "created": 1762194728.003911,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.168196"
+    },
+    "shadow/inspect_chroma.py": {
+      "path": "shadow/inspect_chroma.py",
+      "size": 974,
+      "modified": 1760277522.4181836,
+      "created": 1760277522.4181836,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.168290"
+    },
+    "shadow/enhanced_github_monitor.py": {
+      "path": "shadow/enhanced_github_monitor.py",
+      "size": 19734,
+      "modified": 1762191866.064063,
+      "created": 1762191866.064063,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.168386"
+    },
+    "shadow/design_plan_unified.md": {
+      "path": "shadow/design_plan_unified.md",
+      "size": 41492,
+      "modified": 1760351962.670101,
+      "created": 1760351962.670101,
+      "is_file": true,
+      "extension": ".md",
+      "last_seen": "2025-11-04T02:16:18.168470"
+    },
+    "shadow/aipha_shadow.py": {
+      "path": "shadow/aipha_shadow.py",
+      "size": 74951,
+      "modified": 1762101340.1504226,
+      "created": 1762101340.1504226,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.168565"
+    },
+    "shadow/config_shadow.yaml": {
+      "path": "shadow/config_shadow.yaml",
+      "size": 1581,
+      "modified": 1760257219.1630354,
+      "created": 1760257219.1630354,
+      "is_file": true,
+      "extension": ".yaml",
+      "last_seen": "2025-11-04T02:16:18.168657"
+    },
+    "shadow/aiphalab_bridge.py": {
+      "path": "shadow/aiphalab_bridge.py",
+      "size": 20406,
+      "modified": 1762200563.838892,
+      "created": 1762200563.838892,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.168734"
+    },
+    "shadow/github_monitor.py": {
+      "path": "shadow/github_monitor.py",
+      "size": 11077,
+      "modified": 1762191257.5450883,
+      "created": 1762191257.5450883,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.168785"
+    },
+    "shadow/init_shadow_with_design_plan.py": {
+      "path": "shadow/init_shadow_with_design_plan.py",
+      "size": 1977,
+      "modified": 1760347228.7372198,
+      "created": 1760347228.7372198,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.168835"
+    },
+    "shadow/aiphalab_enhanced_bridge.py": {
+      "path": "shadow/aiphalab_enhanced_bridge.py",
+      "size": 18289,
+      "modified": 1762218196.926927,
+      "created": 1762218196.926927,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.168884"
+    },
+    "shadow/aipha_shadow_simple.py": {
+      "path": "shadow/aipha_shadow_simple.py",
+      "size": 8525,
+      "modified": 1762101874.7138445,
+      "created": 1762101874.7138445,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.168932"
+    },
+    "shadow/milestone_detector.py": {
+      "path": "shadow/milestone_detector.py",
+      "size": 16697,
+      "modified": 1762195401.4421268,
+      "created": 1762195401.4421268,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.169002"
+    },
+    "shadow/log_git_event.py": {
+      "path": "shadow/log_git_event.py",
+      "size": 8090,
+      "modified": 1762200042.7811308,
+      "created": 1762200062.9454327,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.169056"
+    },
+    "shadow/shadow_storage/chroma_db/chroma.sqlite3": {
+      "path": "shadow/shadow_storage/chroma_db/chroma.sqlite3",
+      "size": 163840,
+      "modified": 1760419482.449073,
+      "created": 1760419482.449073,
+      "is_file": true,
+      "extension": ".sqlite3",
+      "last_seen": "2025-11-04T02:16:18.169387"
+    },
+    "shadow/shadow_storage/vector_db/chroma.sqlite3": {
+      "path": "shadow/shadow_storage/vector_db/chroma.sqlite3",
+      "size": 1474560,
+      "modified": 1760419476.2448997,
+      "created": 1760419476.2448997,
+      "is_file": true,
+      "extension": ".sqlite3",
+      "last_seen": "2025-11-04T02:16:18.169653"
+    },
+    "shadow/shadow_storage/vector_db/f8d11011-a14b-48c8-9e9a-a81ae74384e1/header.bin": {
+      "path": "shadow/shadow_storage/vector_db/f8d11011-a14b-48c8-9e9a-a81ae74384e1/header.bin",
+      "size": 100,
+      "modified": 1760260480.157172,
+      "created": 1760260480.157172,
+      "is_file": true,
+      "extension": ".bin",
+      "last_seen": "2025-11-04T02:16:18.169835"
+    },
+    "shadow/shadow_storage/vector_db/f8d11011-a14b-48c8-9e9a-a81ae74384e1/link_lists.bin": {
+      "path": "shadow/shadow_storage/vector_db/f8d11011-a14b-48c8-9e9a-a81ae74384e1/link_lists.bin",
+      "size": 0,
+      "modified": 1760260480.157172,
+      "created": 1760260480.157172,
+      "is_file": true,
+      "extension": ".bin",
+      "last_seen": "2025-11-04T02:16:18.169930"
+    },
+    "shadow/shadow_storage/vector_db/f8d11011-a14b-48c8-9e9a-a81ae74384e1/length.bin": {
+      "path": "shadow/shadow_storage/vector_db/f8d11011-a14b-48c8-9e9a-a81ae74384e1/length.bin",
+      "size": 400,
+      "modified": 1760267373.557455,
+      "created": 1760267373.557455,
+      "is_file": true,
+      "extension": ".bin",
+      "last_seen": "2025-11-04T02:16:18.170041"
+    },
+    "shadow/shadow_storage/vector_db/f8d11011-a14b-48c8-9e9a-a81ae74384e1/data_level0.bin": {
+      "path": "shadow/shadow_storage/vector_db/f8d11011-a14b-48c8-9e9a-a81ae74384e1/data_level0.bin",
+      "size": 167600,
+      "modified": 1760260480.1581721,
+      "created": 1760260480.1581721,
+      "is_file": true,
+      "extension": ".bin",
+      "last_seen": "2025-11-04T02:16:18.170137"
+    },
+    "shadow/shadow_storage/vector_db/8dd88038-fb23-40bb-8373-25454da6de0c/header.bin": {
+      "path": "shadow/shadow_storage/vector_db/8dd88038-fb23-40bb-8373-25454da6de0c/header.bin",
+      "size": 100,
+      "modified": 1761198389.4830713,
+      "created": 1761198389.4830713,
+      "is_file": true,
+      "extension": ".bin",
+      "last_seen": "2025-11-04T02:16:18.170326"
+    },
+    "shadow/shadow_storage/vector_db/8dd88038-fb23-40bb-8373-25454da6de0c/link_lists.bin": {
+      "path": "shadow/shadow_storage/vector_db/8dd88038-fb23-40bb-8373-25454da6de0c/link_lists.bin",
+      "size": 0,
+      "modified": 1761198389.4850714,
+      "created": 1761198389.4850714,
+      "is_file": true,
+      "extension": ".bin",
+      "last_seen": "2025-11-04T02:16:18.170425"
+    },
+    "shadow/shadow_storage/vector_db/8dd88038-fb23-40bb-8373-25454da6de0c/length.bin": {
+      "path": "shadow/shadow_storage/vector_db/8dd88038-fb23-40bb-8373-25454da6de0c/length.bin",
+      "size": 400,
+      "modified": 1761198389.4850714,
+      "created": 1761198389.4850714,
+      "is_file": true,
+      "extension": ".bin",
+      "last_seen": "2025-11-04T02:16:18.170523"
+    },
+    "shadow/shadow_storage/vector_db/8dd88038-fb23-40bb-8373-25454da6de0c/data_level0.bin": {
+      "path": "shadow/shadow_storage/vector_db/8dd88038-fb23-40bb-8373-25454da6de0c/data_level0.bin",
+      "size": 167600,
+      "modified": 1761198389.4820714,
+      "created": 1761198389.4820714,
+      "is_file": true,
+      "extension": ".bin",
+      "last_seen": "2025-11-04T02:16:18.170615"
+    },
+    "tests/__init__.py": {
+      "path": "tests/__init__.py",
+      "size": 0,
+      "modified": 1759512603.3383777,
+      "created": 1759512603.3383777,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.170818"
+    },
+    "tests/integration_test_full_workflow.sh": {
+      "path": "tests/integration_test_full_workflow.sh",
+      "size": 6729,
+      "modified": 1762216879.738077,
+      "created": 1762217096.7454436,
+      "is_file": true,
+      "extension": ".sh",
+      "last_seen": "2025-11-04T02:16:18.170902"
+    },
+    "tests/test_integration.py": {
+      "path": "tests/test_integration.py",
+      "size": 2959,
+      "modified": 1759865454.496307,
+      "created": 1759865454.496307,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.171000"
+    },
+    "tests/test_atomic_update_system.py": {
+      "path": "tests/test_atomic_update_system.py",
+      "size": 7993,
+      "modified": 1759865441.4180775,
+      "created": 1759865441.4180775,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.171082"
+    },
+    "tests/test_proposal_evaluator.py": {
+      "path": "tests/test_proposal_evaluator.py",
+      "size": 13477,
+      "modified": 1760340934.2633932,
+      "created": 1760340934.2633932,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.171163"
+    },
+    "tests/test_redesign_helper.py": {
+      "path": "tests/test_redesign_helper.py",
+      "size": 4249,
+      "modified": 1760339583.9821374,
+      "created": 1760339583.9821374,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.171247"
+    },
+    "tests/test_shadow_integration.py": {
+      "path": "tests/test_shadow_integration.py",
+      "size": 10491,
+      "modified": 1762217015.979199,
+      "created": 1762217015.979199,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.171328"
+    },
+    "tests/test_context_sentinel.py": {
+      "path": "tests/test_context_sentinel.py",
+      "size": 4143,
+      "modified": 1759865448.4212003,
+      "created": 1759865448.4212003,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.171412"
+    },
+    "tests/conftest.py": {
+      "path": "tests/conftest.py",
+      "size": 4505,
+      "modified": 1760339349.596479,
+      "created": 1760339349.596479,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.171491"
+    },
+    "tests/test_codecraft_sage.py": {
+      "path": "tests/test_codecraft_sage.py",
+      "size": 13564,
+      "modified": 1760341971.92325,
+      "created": 1760341971.92325,
+      "is_file": true,
+      "extension": ".py",
+      "last_seen": "2025-11-04T02:16:18.171567"
+    },
+    "templates/index.html": {
+      "path": "templates/index.html",
+      "size": 22934,
+      "modified": 1762101423.5613167,
+      "created": 1762101423.5613167,
+      "is_file": true,
+      "extension": ".html",
+      "last_seen": "2025-11-04T02:16:18.171734"
+    },
+    "test_shadow_change.txt": {
+      "path": "test_shadow_change.txt",
+      "size": 29,
+      "modified": 1762218981.2665033,
+      "created": 1762218981.2665033,
+      "is_file": true,
+      "extension": ".txt",
+      "last_seen": "2025-11-04T02:16:21.269290",
+      "last_event": "modified"
+    }
+  },
+  "directories": [
+    "tests",
+    "shadow/shadow_storage/chroma_db",
+    "shadow",
+    "shadow/shadow_storage/vector_db/f8d11011-a14b-48c8-9e9a-a81ae74384e1",
+    "shadow_storage/vector_db/fcfa2b94-5223-49fa-a2f3-ade85a9cca79",
+    "aipha",
+    "shadow_storage/vector_db",
+    "aipha/core",
+    "scripts",
+    "shadow/shadow_storage/vector_db/8dd88038-fb23-40bb-8373-25454da6de0c",
+    "aipha_memory_storage/global_state",
+    "shadow/shadow_storage",
+    "aipha_project",
+    "aipha_project/chroma_db/9ed994b1-4047-470d-a251-6b0bc95e1870",
+    "monitored_repos",
+    "shadow_storage/chroma_db",
+    "shadow_storage",
+    "aipha_memory_storage/action_history",
+    "aipha_memory_storage/config",
+    "templates",
+    "aipha_project/chroma_db",
+    "docs",
+    "shadow/shadow_storage/vector_db",
+    "aipha/core/knowledge_manager",
+    ".",
+    "aipha/core/tools",
+    "aipha_memory_storage",
+    "monitored_repos/aipha_0.0.1"
+  ],
+  "summary": {
+    "total_files": 102,
+    "total_directories": 28,
+    "extensions": {
+      ".json": 10,
+      ".py": 48,
+      ".log": 1,
+      ".md": 8,
+      ".sh": 5,
+      "": 3,
+      ".yaml": 2,
+      ".sqlite3": 5,
+      ".pickle": 1,
+      ".bin": 16,
+      ".db": 1,
+      ".html": 1,
+      ".txt": 1
+    },
+    "last_scan": "2025-11-04T02:16:18.171764",
+    "project_path": "/home/vaclav/aipha_1"
+  }
+}

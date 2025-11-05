@@ -1,0 +1,40 @@
+[
+  {
+    "timestamp": "2025-11-04T12:53:02.025999",
+    "from_version": "shadow_1.0",
+    "to_version": "shadow_2.0",
+    "action": "startup_registration",
+    "status": "success",
+    "details": {
+      "success": true,
+      "endpoint": "shadow_2.0.endpoint.local:8080",
+      "response": "acknowledged",
+      "timestamp": "2025-11-04T12:53:02.025938"
+    }
+  },
+  {
+    "timestamp": "2025-11-04T12:53:02.272190",
+    "from_version": "shadow_1.0",
+    "to_version": "shadow_2.0",
+    "action": "context_transfer_request",
+    "status": "success",
+    "details": {
+      "transfer_id": "4d4f653f",
+      "mode": "full"
+    }
+  },
+  {
+    "timestamp": "2025-11-04T12:53:02.545140",
+    "from_version": "shadow_1.0",
+    "to_version": "shadow_1.0",
+    "action": "context_integrity_validation",
+    "status": "success",
+    "details": {
+      "checksum_match": true,
+      "data_integrity": true,
+      "completeness": true,
+      "issues_count": 0,
+      "warnings_count": 0
+    }
+  }
+]

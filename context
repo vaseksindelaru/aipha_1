@@ -1,0 +1,340 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+context_update_system.py - Sistema para actualizar el contexto de Gemini/Shadow
+
+Este script actualiza la memoria contextual de Shadow con la estructura
+actual del repositorio Aipha_0.0.1, permitiendo que Gemini proporcione
+información precisa sobre el estado actual del proyecto.
+"""
+
+import os
+import json
+import yaml
+from datetime import datetime
+from pathlib import Path
+from typing import Dict, Any, List
+
+class ContextUpdateSystem:
+    """
+    Sistema para actualizar el contexto de Gemini con información actual del repositorio
+    """
+    
+    def __init__(self, repo_path: str = "../Aipha_0.0.1"):
+        self.repo_path = Path(repo_path)
+        self.shadow_memory_path = self.repo_path / "shadow_memory" / "shadow_memory.json"
+        self.config_path = self.repo_path / "shadow" / "config_shadow.yaml"
+        
+        print("🔄 Inicializando sistema de actualización contextual...")
+    
+    def scan_repository_structure(self) -> Dict[str, Any]:
+        """Escanea la estructura actual del repositorio"""
+        structure = {
+            "timestamp": datetime.now().isoformat(),
+            "repository_version": "Aipha_0.0.1_extended",
+            "structure_type": "current_repository_state",
+            "files": {},
+            "directories": {},
+            "total_files": 0,
+            "total_lines": 0
+        }
+        
+        # Escanear archivos
+        for root, dirs, files in os.walk(self.repo_path):
+            # Excluir directorios no deseados
+            dirs[:] = [d for d in dirs if not d.startswith('.') and d not in ['__pycache__']]
+            
+            rel_root = os.path.relpath(root, self.repo_path)
+            
+            for file in files:
+                if not file.startswith('.') and not file.endswith('.pyc'):
+                    file_path = Path(root) / file
+                    rel_path = os.path.relpath(file_path, self.repo_path)
+                    
+                    # Obtener información del archivo
+                    file_info = self._analyze_file(file_path)
+                    structure["files"][rel_path] = file_info
+                    structure["total_files"] += 1
+                    structure["total_lines"] += file_info.get("lines", 0)
+            
+            # Registrar directorios
+            if rel_root != ".":
+                structure["directories"][rel_root] = {
+                    "type": "directory",
+                    "purpose": self._infer_directory_purpose(rel_root)
+                }
+        
+        return structure
+    
+    def _analyze_file(self, file_path: Path) -> Dict[str, Any]:
+        """Analiza un archivo individual"""
+        try:
+            stat = file_path.stat()
+            file_info = {
+                "name": file_path.name,
+                "size_bytes": stat.st_size,
+                "modified": datetime.fromtimestamp(stat.st_mtime).isoformat(),
+                "type": self._get_file_type(file_path),
+                "lines": 0,
+                "purpose": self._infer_file_purpose(file_path)
+            }
+            
+            # Contar líneas para archivos de texto
+            if file_path.suffix in ['.py', '.md', '.json', '.yaml', '.txt']:
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                        file_info["lines"] = len(content.split('\n'))
+                        
+                        # Análisis adicional para Python
+                        if file_path.suffix == '.py':
+                            file_info.update(self._analyze_python_file(content))
+                            
+                except UnicodeDecodeError:
+                    file_info["encoding"] = "binary"
+            
+            return file_info
+            
+        except Exception as e:
+            return {
+                "name": file_path.name,
+                "error": f"Analysis failed: {str(e)}"
+            }
+    
+    def _analyze_python_file(self, content: str) -> Dict[str, Any]:
+        """Análisis específico para archivos Python"""
+        analysis = {
+            "classes": [],
+            "functions": [],
+            "imports": [],
+            "complexity": "low"
+        }
+        
+        lines = content.split('\n')
+        
+        for i, line in enumerate(lines):
+            line = line.strip()
+            
+            # Detectar clases
+            if line.startswith('class '):
+                class_name = line.split('(')[0].replace('class ', '').strip()
+                analysis["classes"].append({
+                    "name": class_name,
+                    "line": i + 1
+                })
+            
+            # Detectar funciones
+            elif line.startswith('def '):
+                func_name = line.split('(')[0].replace('def ', '').strip()
+                analysis["functions"].append({
+                    "name": func_name,
+                    "line": i + 1
+                })
+            
+            # Detectar imports
+            elif line.startswith('import ') or line.startswith('from '):
+                analysis["imports"].append(line)
+        
+        # Estimar complejidad
+        total_elements = len(analysis["classes"]) + len(analysis["functions"])
+        if total_elements > 10:
+            analysis["complexity"] = "high"
+        elif total_elements > 5:
+            analysis["complexity"] = "medium"
+        
+        return analysis
+    
+    def _get_file_type(self, file_path: Path) -> str:
+        """Determina el tipo de archivo"""
+        suffix = file_path.suffix.lower()
+        type_map = {
+            '.py': 'python_source',
+            '.json': 'configuration_json',
+            '.yaml': 'configuration_yaml', 
+            '.yml': 'configuration_yaml',
+            '.md': 'documentation_markdown',
+            '.txt': 'text_file',
+            '.sh': 'shell_script'
+        }
+        return type_map.get(suffix, 'unknown')
+    
+    def _infer_file_purpose(self, file_path: Path) -> str:
+        """Infier el propósito del archivo basado en nombre y ubicación"""
+        name = file_path.name.lower()
+        parent = str(file_path.parent).lower()
+        
+        # Archivos principales
+        if name == 'main.py':
+            return "Main application entry point and orchestration"
+        elif name == 'config.json':
+            return "Central configuration file with trading parameters"
+        elif name == 'config_loader.py':
+            return "Configuration management and loading system"
+        elif name == 'strategy.py':
+            return "Trading strategy implementation (SMA crossover)"
+        elif name == 'potential_capture_engine.py':
+            return "Trading signal generation engine"
+        elif name == 'shadow.py':
+            return "Extended Shadow system with Gemini/AiphaLab integration"
+        elif name == 'readme.md':
+            return "Project documentation and setup instructions"
+        elif name.startswith('config_shadow'):
+            return "Shadow system configuration"
+        elif 'shadow_memory' in parent:
+            return "Shadow system memory and event storage"
+        
+        return "Project file"
+    
+    def _infer_directory_purpose(self, dir_path: str) -> str:
+        """Infier el propósito de un directorio"""
+        if 'shadow' in dir_path:
+            return "Shadow system components and configuration"
+        elif 'shadow_memory' in dir_path:
+            return "Shadow system memory storage"
+        return "Project directory"
+    
+    def update_shadow_memory(self, structure_data: Dict[str, Any]):
+        """Actualiza la memoria de Shadow con la nueva información contextual"""
+        try:
+            # Leer memoria actual
+            if self.shadow_memory_path.exists():
+                with open(self.shadow_memory_path, 'r', encoding='utf-8') as f:
+                    memory = json.load(f)
+            else:
+                memory = {"events": []}
+            
+            # Crear entrada de actualización contextual
+            context_entry = {
+                "timestamp": datetime.now().isoformat(),
+                "event_type": "context_update",
+                "action": "Repository structure update for Gemini context synchronization",
+                "agent": "ContextUpdateSystem",
+                "component": "context_synchronization",
+                "status": "success",
+                "details": {
+                    "update_type": "repository_structure_sync",
+                    "repository_version": structure_data["repository_version"],
+                    "total_files": structure_data["total_files"],
+                    "total_lines": structure_data["total_lines"],
+                    "structure_data": structure_data,
+                    "purpose": "Update Gemini's contextual knowledge with current repository structure"
+                }
+            }
+            
+            # Agregar al historial
+            memory["events"].append(context_entry)
+            
+            # Mantener solo los últimos 100 eventos
+            if len(memory["events"]) > 100:
+                memory["events"] = memory["events"][-100:]
+            
+            # Guardar memoria actualizada
+            with open(self.shadow_memory_path, 'w', encoding='utf-8') as f:
+                json.dump(memory, f, indent=2, ensure_ascii=False)
+            
+            print(f"✅ Memoria Shadow actualizada con estructura del repositorio")
+            print(f"   📁 {structure_data['total_files']} archivos analizados")
+            print(f"   📝 {structure_data['total_lines']} líneas totales")
+            
+            return True
+            
+        except Exception as e:
+            print(f"❌ Error actualizando memoria Shadow: {e}")
+            return False
+    
+    def generate_context_update_message(self, structure_data: Dict[str, Any]) -> str:
+        """Genera un mensaje para actualizar el contexto de Gemini"""
+        message = f"""CONTEXTO ACTUALIZADO - ESTRUCTURA DE AIPHA_0.0.1
+
+Fecha de actualización: {datetime.now().isoformat()}
+
+ESTRUCTURA ACTUAL DEL REPOSITORIO:
+{json.dumps(structure_data, indent=2, ensure_ascii=False)}
+
+ARCHIVOS PRINCIPALES:
+"""
+        
+        for file_path, file_info in structure_data["files"].items():
+            if file_info.get("type") in ["python_source", "configuration_json", "documentation_markdown"]:
+                message += f"- {file_path}: {file_info.get('purpose', 'Unknown')}\n"
+        
+        message += "\nDIRECTORIOS:\n"
+        for dir_path, dir_info in structure_data["directories"].items():
+            message += f"- {dir_path}/: {dir_info.get('purpose', 'Unknown')}\n"
+        
+        message += f"""
+ESTADÍSTICAS:
+- Total de archivos: {structure_data['total_files']}
+- Total de líneas: {structure_data['total_lines']}
+- Versión del repositorio: {structure_data['repository_version']}
+
+Esta información debe actualizar tu conocimiento contextual sobre la estructura actual de Aipha_0.0.1.
+"""
+        
+        return message
+    
+    def run_full_update(self) -> bool:
+        """Ejecuta una actualización completa del contexto"""
+        print("🔄 Iniciando actualización completa del contexto...")
+        
+        try:
+            # 1. Escanear estructura actual
+            print("📁 Escaneando estructura del repositorio...")
+            structure = self.scan_repository_structure()
+            
+            # 2. Actualizar memoria Shadow
+            print("💾 Actualizando memoria Shadow...")
+            memory_updated = self.update_shadow_memory(structure)
+            
+            # 3. Generar mensaje de actualización
+            print("📝 Generando mensaje de actualización contextual...")
+            update_message = self.generate_context_update_message(structure)
+            
+            # 4. Mostrar resumen
+            print("\n" + "="*60)
+            print("✅ ACTUALIZACIÓN CONTEXTUAL COMPLETADA")
+            print("="*60)
+            print(f"📊 Archivos analizados: {structure['total_files']}")
+            print(f"📝 Líneas de código: {structure['total_lines']}")
+            print(f"💾 Memoria actualizada: {'Sí' if memory_updated else 'No'}")
+            print("\n📋 ESTRUCTURA ACTUAL:")
+            
+            for file_path in sorted(structure["files"].keys()):
+                file_info = structure["files"][file_path]
+                file_type = file_info.get("type", "unknown")
+                if file_type in ["python_source", "configuration_json", "configuration_yaml", "documentation_markdown"]:
+                    print(f"  📄 {file_path} ({file_info.get('lines', 0)} líneas)")
+            
+            print("\n🔄 Para que Gemini refleje esta estructura actualizada,")
+            print("   envía el siguiente mensaje a través del sistema Shadow:")
+            print("\n" + "-"*50)
+            print(update_message[:500] + "..." if len(update_message) > 500 else update_message)
+            print("-"*50)
+            
+            return True
+            
+        except Exception as e:
+            print(f"❌ Error en actualización completa: {e}")
+            return False
+
+
+def main():
+    """Función principal"""
+    print("🚀 Sistema de Actualización Contextual Shadow-Gemini")
+    print("="*55)
+    
+    # Crear sistema de actualización
+    updater = ContextUpdateSystem()
+    
+    # Ejecutar actualización completa
+    success = updater.run_full_update()
+    
+    if success:
+        print("\n🎉 ¡Actualización completada exitosamente!")
+        print("📤 El contexto de Gemini ahora debería reflejar la estructura actual.")
+    else:
+        print("\n❌ Error en la actualización contextual.")
+
+
+if __name__ == "__main__":
+    main()
